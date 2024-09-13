@@ -12,7 +12,7 @@ from django.contrib.auth.hashers import make_password
 from django.views.decorators.cache import cache_page
 from django.utils.decorators import method_decorator
 from App.utlis import *
-
+BASE_URL = ''
 class LoginAPI(APIView):
     def post(self, request):
         try:
@@ -320,7 +320,8 @@ class EncreaseDeCartItemQuantityAPi(APIView):
         try:
             cart_item = UserCartModel.objects.get(id=item_id, cart_user=request.user)
             cart_item.quantity = int(quantity_obj)
-            cart_item.save()  
+            cart_item.save()
+            
             return Response({"message": "Quantity Added successfully", "quantity": cart_item.quantity}, status=status.HTTP_200_OK)
         except UserCartModel.DoesNotExist:
             return Response({"message": "Cart item not found"}, status=status.HTTP_404_NOT_FOUND)
