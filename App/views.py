@@ -12,7 +12,7 @@ from django.contrib.auth.hashers import make_password
 from django.views.decorators.cache import cache_page
 from django.utils.decorators import method_decorator
 from App.utlis import *
-BASE_URL = ''
+
 class LoginAPI(APIView):
     def post(self, request):
         try:
