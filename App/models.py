@@ -47,7 +47,7 @@ class MyUserManager(BaseUserManager):
 class MyUser(AbstractBaseUser,CommonTimePicker):
     user_type = models.CharField("User Type", max_length=10, default='Admin', choices=USERTYPE)
     uuid = models.UUIDField(default=uuid.uuid4, editable=False)
-    email = models.EmailField("Email Address", null=True, blank=True, unique=True)
+    email = models.EmailField("Email Address", null=True, blank=True, unique=True,db_index=True)
     mobile = models.CharField('Mobile Number', max_length=256,default="",null=True,blank=True)
     first_name = models.CharField("First Name", max_length=256, blank=True, null=True)
     last_name = models.CharField("Last Name", max_length=256, blank=True, null=True)
@@ -101,12 +101,18 @@ class ProductModel(CommonTimePicker):
 
 class UserCartModel(CommonTimePicker):
     cart_user = models.ForeignKey(MyUser, on_delete=models.CASCADE, related_name="cart_user")
-    cart_products = models.OneToOneField(ProductModel, on_delete=models.CASCADE, related_name="cart_products")
+    cart_products = models.OneToOneField(ProductModel, on_delete=models.CASCADE, related_name="cart_products",blank=True,null=True)
+    
+    name = models.CharField("Name", max_length=100,null=True,blank=True)
+    heading = models.CharField("Heading", max_length=100,null=True,blank=True)
+    description = models.CharField("Description", max_length=100,null=True,blank=True)
+    currentSize = models.CharField("Size", max_length=100,null=True,blank=True)
     quantity = models.PositiveIntegerField(default=1)
-    is_active = models.BooleanField(default=True)
-    edit_cover_img = models.ImageField("Cover Image", null=True, blank=True,upload_to='edit_cover_img')
-    edit_inner_img = models.ImageField("Inner Image", null=True, blank=True,upload_to='edit_cover_img')
+    boardSelectedOption = models.CharField("Board Selected",max_length=20,choices=BOARD_SELECTED)
+    cover = models.ImageField("Cover Image", null=True, blank=True,upload_to='edit_cover_img')
+    inner = models.ImageField("Inner Image", null=True, blank=True,upload_to='edit_cover_img')
+    price = models.PositiveIntegerField("Price",default=0, blank=True, null=True)
 
     def __str__(self) -> str:
-        return self.cart_products.title
+        return self.name
 

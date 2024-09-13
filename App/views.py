@@ -1,8 +1,5 @@
-from django.shortcuts import render
-from django.contrib.auth import authenticate
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework import status
@@ -12,30 +9,30 @@ from App.serializer import *
 from App.email import *
 from rest_framework.pagination import PageNumberPagination
 from django.contrib.auth.hashers import make_password
+from django.views.decorators.cache import cache_page
+from django.utils.decorators import method_decorator
+from App.utlis import *
 
 class LoginAPI(APIView):
     def post(self, request):
         try:
-            user = MyUser.objects.filter(email=request.data.get("email")).first()
-            if not user:
-                return Response({"message": "User does not exist."}, status=status.HTTP_404_NOT_FOUND)
+            user = MyUser.objects.get(email=request.data.get("email"))
             if user.user_type == "Admin":
                 return Response({"success": False, "message": "Invalid user type."}, status=status.HTTP_400_BAD_REQUEST)
-            refresh = RefreshToken.for_user(user)
-            token = {
-                'access': str(refresh.access_token),
-            }
-            return Response({
-                'responsecode': status.HTTP_200_OK,
-                'userid': user.uuid,
-                'token': token,
-                'responsemessage': 'User logged in successfully.'
-            }, status=status.HTTP_200_OK)
 
-        except Exception as e:
-            print(f"Login error: {e}")
-            return Response({"success": False, "message": "Something went wrong."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
+        except MyUser.DoesNotExist:
+            return Response({"message": "User does not exist."}, status=status.HTTP_404_NOT_FOUND)
+        
+        refresh = RefreshToken.for_user(user)
+        token = {
+            'access': str(refresh.access_token),
+        }
+        return Response({
+            'responsecode': status.HTTP_200_OK,
+            'userid': user.uuid,
+            'token': token,
+            'responsemessage': 'User logged in successfully.'
+        }, status=status.HTTP_200_OK)
 
 
 class ResetPasswordApi(APIView):
@@ -72,15 +69,13 @@ class ResetPasswordApi(APIView):
 class SendOtpApi(APIView):
     def post(self, request):
         try:
-            data = request.data
-            email = data.get("email")
-            if not email:
+            if not request.data["email"]:
                 return Response({"message": "Email is required."}, status=status.HTTP_400_BAD_REQUEST)
-            user = MyUser.objects.filter(email=email).first()
+            user = MyUser.objects.get(email=request.data["email"])
             if not user:
                 return Response({"message": "User does not exist."}, status=status.HTTP_404_NOT_FOUND)
             otp = user.otp_creation()
-            if send_otp_email(email, otp):
+            if send_otp_email(request.data["email"], otp):
                 return Response({"message": "OTP sent successfully."}, status=status.HTTP_200_OK)
             else:
                 return Response({"message": "Failed to send OTP. Please try again."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -92,41 +87,33 @@ class SendOtpApi(APIView):
 
 # forget password 
 
+
 class SignupApi(APIView):
     def post(self, request):
         serializer = SignupSerializer(data=request.data)
         if serializer.is_valid():
-            try:
-                user = serializer.save()
-            except serializers.ValidationError as e:
-                error_detail = e.detail
-                return Response(
-                    {"responsecode": 400, "responsemessage": error_detail[0]},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
+            user = serializer.save()
             refresh = RefreshToken.for_user(user)
-            token = {
-                'access': str(refresh.access_token)     
-            }
-            message = {
-                "responsecode":status.HTTP_200_OK,
-                "responsemessage": "User created successfully. An OTP has been sent to your email for verification.",
-                "userid":user.uuid,
-                "token":token}
-            return Response(message, status=status.HTTP_201_CREATED)
-        else:
-            responcemessage = ""
-            for item in serializer.errors.items():
-                responcemessage += " " + f"error in {item[0]}:-{item[1][0]}"
+            token = {'access': str(refresh.access_token)}
             response = {
-                "responsecode": status.HTTP_400_BAD_REQUEST,
-                "responcemessage": responcemessage
+                "responsecode": status.HTTP_201_CREATED,
+                "responsemessage": "User created successfully.",
+                "userid": user.uuid,
+                "token": token
             }
-            return Response(response, status=status.HTTP_400_BAD_REQUEST)
+            return Response(response, status=status.HTTP_201_CREATED)
+        
+        # Format error messages
+        error_messages = {field: errors[0] for field, errors in serializer.errors.items()}
+        response = {
+            "responsecode": status.HTTP_400_BAD_REQUEST,
+            "responsemessage": error_messages
+        }
+        return Response(response, status=status.HTTP_400_BAD_REQUEST)
         
 
 
-
+# @method_decorator(cache_page(60 * 15), name='get')
 class ProductAPi(APIView):
     pagination_class = PageNumberPagination
     # permission_classes = [IsAuthenticated]
@@ -175,7 +162,7 @@ class ProductAPi(APIView):
         return response
     
 
-
+# @method_decorator(cache_page(60 * 15), name='get')
 class UserProfileAPI(APIView):
     permission_classes = [IsAuthenticated]
     def get(self, request):
@@ -206,7 +193,7 @@ class UserUpdateApi(APIView):
         if serializer.is_valid():
             serializer.save() 
             if 'current_password' in request.data and 'new_password' in request.data:
-                instance.save()  # Save password changes
+                instance.save()  
             serialized_data = self.serializer_class(instance).data
             data = {
                 "userid": request.user.id,
@@ -253,3 +240,87 @@ class ForgetPasswordAPI(APIView):
                 "message": responcemessage or "There was an error processing your request."
             }
             return Response(response, status=status.HTTP_400_BAD_REQUEST)
+        
+
+
+class AddToCartAPi(APIView):
+    permission_classes = [IsAuthenticated]
+    def post(self, request):
+        base_url = request.build_absolute_uri('/')
+        user = MyUser.objects.get(id=request.user.id)
+        cart_user = UserCartModel.objects.create(
+            cart_user=user,
+            name=request.data['name'],
+            heading=request.data['heading'],
+            description=request.data['description'],
+            currentSize=request.data['currentSize'],
+            quantity=request.data['quantity'],
+            boardSelectedOption=request.data['boardSelectedOption'],
+            cover=base64_to_image(request.data['cover'], "cover_img.png"),
+            inner=base64_to_image(request.data['inner'], "inner_img.png"),
+            price=request.data['price'])
+        cover_img_url = cart_user.cover.url if cart_user.cover else None
+        inner_img_url = cart_user.inner.url if cart_user.inner else None
+
+        cart_data = {
+            "cart_user": cart_user.cart_user.uuid,
+            "quantity": cart_user.quantity,
+            "price": cart_user.price,
+            "name": cart_user.name,
+            "heading": cart_user.heading,
+            "description": cart_user.description,
+            "currentSize": cart_user.currentSize,
+            "boardSelectedOption": cart_user.boardSelectedOption,
+            "cover": f"{base_url.rstrip('/')}{cover_img_url}" if cover_img_url else None,
+            "inner": f"{base_url.rstrip('/')}{inner_img_url}" if inner_img_url else None
+        }
+        return Response({"message": "Add to cart successfully", "data": cart_data}, status=status.HTTP_200_OK)
+
+
+class GetUserCartAPi(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        base_url = request.build_absolute_uri('/')
+        cart_items = UserCartModel.objects.filter(cart_user=request.user).values(
+            "id","name", "heading", "description", "currentSize", "quantity", "boardSelectedOption", "cover", "inner", "price"
+        ).order_by("-id")
+        for item in cart_items:
+            if item['cover']:
+                item['cover'] = f"{base_url.rstrip('/')}/media/{item['cover']}"
+            if item['inner']:
+                item['inner'] = f"{base_url.rstrip('/')}/media/{item['inner']}"
+        return Response({"message": "Cart data retrieved successfully", "data": list(cart_items)}, status=status.HTTP_200_OK)
+
+
+
+class RemoveCartItemAPi(APIView):
+    permission_classes = [IsAuthenticated]
+    def put(self, request):
+        item_id = request.data.get('item_id')
+        if not item_id:
+            return Response({"message": "Item ID is required"}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            cart_item = UserCartModel.objects.get(id=item_id, cart_user=request.user)
+            cart_item.delete()
+            return Response({"message": "Cart item removed successfully"}, status=status.HTTP_204_NO_CONTENT)
+        except UserCartModel.DoesNotExist:
+            return Response({"message": "Cart item not found"}, status=status.HTTP_404_NOT_FOUND)
+
+
+
+class EncreaseDeCartItemQuantityAPi(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def put(self, request):
+        item_id = request.data.get('id')
+        quantity_obj = request.data.get('quantity')  
+        if not item_id:
+            return Response({"message": "Item ID is required"}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            cart_item = UserCartModel.objects.get(id=item_id, cart_user=request.user)
+            cart_item.quantity = int(quantity_obj)
+            cart_item.save()  
+            return Response({"message": "Quantity Added successfully", "quantity": cart_item.quantity}, status=status.HTTP_200_OK)
+        except UserCartModel.DoesNotExist:
+            return Response({"message": "Cart item not found"}, status=status.HTTP_404_NOT_FOUND)

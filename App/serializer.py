@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from App.models import *
-
+from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
 from .models import MyUser
 
@@ -33,45 +33,35 @@ class ResetPasswordSerializer(serializers.Serializer):
 
 class SignupSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(write_only=True)
-    password = serializers.CharField(write_only=True)
+    password = serializers.CharField(write_only=True, validators=[validate_password])
     first_name = serializers.CharField(write_only=True)
     last_name = serializers.CharField(write_only=True)
 
     class Meta:
         model = MyUser
-        fields = ['first_name','last_name', 'email', 'password']
-        extra_kwargs = {
-            'email': {'required': True}, }
-    def validate_password(self, value):
-        if not value:
-            raise serializers.ValidationError("Password is required")
-    
-        if len(value) < 6 or len(value) > 50:
-            raise serializers.ValidationError("The length should be between 6 and 50 characters.")
-        return value
-    
+        fields = ['first_name', 'last_name', 'email', 'password']
+
     def validate(self, attrs):
-        unknown_fields = set(self.initial_data) - set(self.fields)
+        unknown_fields = set(attrs) - set(self.fields)
         if unknown_fields:
             raise serializers.ValidationError(f"Unknown field(s): {', '.join(unknown_fields)}")
         return attrs
 
     def create(self, validated_data):
         email = validated_data.pop('email').lower()
-        print("------------------->",email)
         if MyUser.objects.filter(email=email).exists():
-            raise serializers.ValidationError("User with this email already exists.")
+            raise serializers.ValidationError({"message":"User with this email already exists."})
 
         password = validated_data.pop('password')
-        try:
-            user = MyUser(is_active=True,email=email, user_type="Client",**validated_data)
-            user.set_password(password)
-            user.save()
-
-            return user
-        except Exception as e:
-            print(e)
-            raise serializers.ValidationError("Failed to create user")
+        user = MyUser(
+            is_active=True,
+            email=email,
+            user_type="Client",
+            **validated_data
+        )
+        user.set_password(password)
+        user.save()
+        return user
         
 
 
@@ -96,6 +86,30 @@ class MyUserSerializer(serializers.ModelSerializer):
 
         instance.save()
         return instance
+    
+
+
+class UserCartSerializer(serializers.ModelSerializer):
+        model = UserCartModel
+        fields = [
+            'id',
+            'name',
+            'heading',
+            'desc',
+            'size',
+            'quantity',
+            'board_selected',
+            'cover_img',
+            'inner_img',
+            'cart_type',
+            'cart_price',
+        ]
+
+
+    
+
+
+
     
 
 

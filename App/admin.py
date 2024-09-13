@@ -19,7 +19,7 @@ admin.site.register(ProductModel, ProductAdmin)
 
 
 class UserCartAdmin(admin.ModelAdmin):
-    list_display = ('cart_user','cart_products','quantity','is_active')
+    list_display = ('cart_user','cart_products','quantity')
     list_filter = ('created_at',) 
     search_fields = ('quantity',)  
     ordering = ('-created_at',)  

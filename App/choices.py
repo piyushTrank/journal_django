@@ -29,3 +29,14 @@ COVER_TYPE = (
     ("Leather", "Leather"),
     ("SoftCover", "SoftCover")
 )
+
+CART_TYPE = (
+    ("WithOutProduct", "WithOutProduct"),
+    ("WithProduct", "WithProduct"),
+    ("EditProduct", "EditProduct")
+)
+
+BOARD_SELECTED = (
+    ("leatheretteColor", "leatheretteColor"),
+    ("boardColor", "boardColor")
+)
