@@ -94,6 +94,8 @@ class ProductModel(CommonTimePicker):
     color = models.CharField("Color Type", max_length=10, default='All', choices=COLOR)
     lined_non_lined = models.CharField("Lined non Lined", max_length=10, default='All', choices=LINED_NON_LINED)
     cover_type = models.CharField("Cover Type", max_length=10, default='All', choices=COVER_TYPE)
+    # cover_img = models.ImageField("Cover Image", null=True, blank=True,upload_to='cover_image')
+    # inner_img = models.ImageField("Inner Image", null=True, blank=True,upload_to='inner_image')
 
     def __str__(self):
         return self.title

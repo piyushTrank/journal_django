@@ -4,7 +4,7 @@ from django.core.mail import EmailMultiAlternatives
 from django.conf import settings
 
 def send_otp_email(email, otp):
-    subject = "Journal A.I - Password Reset OTP"
+    subject = "Journal - Password Reset OTP"
     template_path = 'send-otp.html'
     print("===>",otp)
     try:

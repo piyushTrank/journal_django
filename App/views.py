@@ -12,7 +12,7 @@ from django.contrib.auth.hashers import make_password
 from django.views.decorators.cache import cache_page
 from django.utils.decorators import method_decorator
 from App.utlis import *
-
+from django.db.models import Count
 class LoginAPI(APIView):
     def post(self, request):
         try:
@@ -33,37 +33,6 @@ class LoginAPI(APIView):
             'token': token,
             'responsemessage': 'User logged in successfully.'
         }, status=status.HTTP_200_OK)
-
-
-class ResetPasswordApi(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def post(self, request):
-        serializer = ResetPasswordSerializer(data=request.data, context={'request': request})
-        if serializer.is_valid():
-            user = request.user
-            if "user_id" in request.data and request.data["user_id"] != "":
-                user = MyUser.objects.filter(id=request.data["user_id"]).first()
-            current_password = serializer.validated_data.get('current_password')
-            new_password = serializer.validated_data.get('new_password')
-
-            if not user.check_password(current_password):
-                raise APIException("Current password is incorrect.", code=status.HTTP_400_BAD_REQUEST)
-            
-            user.change_password = False
-            user.set_password(new_password)
-            user.save() 
-
-            return Response({'responsecode': status.HTTP_200_OK, 'responsemessage': 'Password changed successfully'},)
-        else:
-            responcemessage = ""
-            for item in serializer.errors.items():
-                responcemessage += " " + f"error in {item[0]}:-{item[1][0]}"
-            response = {
-                "responsecode": status.HTTP_400_BAD_REQUEST,
-                "responcemessage": responcemessage
-            }
-            return Response(response, status=status.HTTP_400_BAD_REQUEST)
         
 
 class SendOtpApi(APIView):
@@ -118,22 +87,23 @@ class ProductAPi(APIView):
     pagination_class = PageNumberPagination
     # permission_classes = [IsAuthenticated]
     def get(self, request):
+        base_url = request.build_absolute_uri('/')
         from_date = request.query_params.get('from_date')
         to_date = request.query_params.get('to_date')
         sort_by = request.query_params.get('sort_by', None) 
         color = request.query_params.get('color', None)
         lined_non_lined = request.query_params.get('lined_non_lined', None)
         cover_type = request.query_params.get('cover_type', None)
+        title = request.query_params.get('title')
 
         product_obj = ProductModel.objects.values(
             'id', 'title', 'disc', 'product_image', 'category', 'price', 'popularity', "created_at", 
-            "color", "lined_non_lined", "cover_type"
-        )
+            "color", "lined_non_lined", "cover_type")
+        print(product_obj.count())
         if from_date and to_date:
             from_date_obj = timezone.datetime.strptime(from_date, '%Y-%m-%d').replace(hour=0, minute=0, second=0, microsecond=0)
             to_date_obj = timezone.datetime.strptime(to_date, '%Y-%m-%d').replace(hour=23, minute=59, second=59, microsecond=999999)
             product_obj = product_obj.filter(created_at__gte=from_date_obj, created_at__lte=to_date_obj)
-
         if color:
             product_obj = product_obj.filter(color=color)
 
@@ -142,6 +112,8 @@ class ProductAPi(APIView):
 
         if cover_type:
             product_obj = product_obj.filter(cover_type=cover_type)
+        if title:
+            product_obj = product_obj.filter(title=title)
 
         if sort_by == 'price_low_to_high':
             product_obj = product_obj.order_by('price')  
@@ -151,13 +123,18 @@ class ProductAPi(APIView):
             product_obj = product_obj.order_by('-popularity')
         elif sort_by == 'latest':
             product_obj = product_obj.order_by('-id')
-        # elif 
-
+        
+        category_counts = ProductModel.objects.values('category').annotate(count=Count('category'))
+        for item in product_obj:
+            if item['product_image']:
+                item['product_image'] = f"{base_url.rstrip('/')}/media/{item['product_image']}"
         paginator = self.pagination_class()
         paginated_product = paginator.paginate_queryset(product_obj, request)
         response = paginator.get_paginated_response(paginated_product)
-        response.data['current_page'] = paginator.page.number  
-        response.data['total'] = paginator.page.paginator.num_pages
+
+        response.data['category_counts'] = {category['category']: category['count'] for category in category_counts}
+        response.data['current_page'] = paginator.page.number
+        response.data['total_pages'] = paginator.page.paginator.num_pages
 
         return response
     
@@ -311,7 +288,6 @@ class RemoveCartItemAPi(APIView):
 
 class EncreaseDeCartItemQuantityAPi(APIView):
     permission_classes = [IsAuthenticated]
-
     def put(self, request):
         item_id = request.data.get('id')
         quantity_obj = request.data.get('quantity')  
@@ -321,7 +297,19 @@ class EncreaseDeCartItemQuantityAPi(APIView):
             cart_item = UserCartModel.objects.get(id=item_id, cart_user=request.user)
             cart_item.quantity = int(quantity_obj)
             cart_item.save()
-            
             return Response({"message": "Quantity Added successfully", "quantity": cart_item.quantity}, status=status.HTTP_200_OK)
         except UserCartModel.DoesNotExist:
             return Response({"message": "Cart item not found"}, status=status.HTTP_404_NOT_FOUND)
+
+
+
+class OurProductsAPi(APIView):
+    # permission_classes = [IsAuthenticated]
+    pagination_class = PageNumberPagination
+    def get(self, request):
+        base_url = request.build_absolute_uri('/')
+        product_obj = ProductModel.objects.values('title','disc','product_image','category','price','popularity','color','lined_non_lined','cover_type').order_by('?')
+        for item in product_obj:
+            if item['product_image']:
+                item['product_image'] = f"{base_url.rstrip('/')}/media/{item['product_image']}"
+        return Response({"message":"Data getting sucessfully","data":list(product_obj)},status=status.HTTP_200_OK)
