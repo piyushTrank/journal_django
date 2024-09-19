@@ -80,54 +80,71 @@ class SignupApi(APIView):
         }
         return Response(response, status=status.HTTP_400_BAD_REQUEST)
         
-
-
 # @method_decorator(cache_page(60 * 15), name='get')
 class ProductAPi(APIView):
     pagination_class = PageNumberPagination
-    # permission_classes = [IsAuthenticated]
-    def get(self, request):
+
+    def post(self, request):
         base_url = request.build_absolute_uri('/')
-        from_date = request.query_params.get('from_date')
-        to_date = request.query_params.get('to_date')
-        sort_by = request.query_params.get('sort_by', None) 
-        color = request.query_params.get('color', None)
-        lined_non_lined = request.query_params.get('lined_non_lined', None)
-        cover_type = request.query_params.get('cover_type', None)
-        title = request.query_params.get('title')
+        data = request.data  # Extract data from the request body
+
+        # Extract filters from the request body
+        from_date = data.get('from_date')
+        to_date = data.get('to_date')
+        sort_by = data.get('sort_by', None)
+        color_query = ', '.join(data.get('color', []))
+        lined_non_lined = ', '.join(data.get('lined_non_lined', []))
+        print(lined_non_lined, type(lined_non_lined))
+        cover_type = ', '.join(data.get('cover_type', []))
+        title = data.get('title')
+        category = data.get('category')
+
+        colors = [color.strip() for color in color_query.split(',') if color.strip()] if color_query else []
+        lined_non_lineds = [i.strip() for i in lined_non_lined.split(',') if i.strip()] if lined_non_lined else []
+        cover_types = [i.strip() for i in cover_type.split(',') if i.strip()] if cover_type else []
 
         product_obj = ProductModel.objects.values(
-            'id', 'title', 'disc', 'product_image', 'category', 'price', 'popularity', "created_at", 
-            "color", "lined_non_lined", "cover_type")
-        print(product_obj.count())
+            'id', 'title', 'disc', 'product_image', 'category', 'price', 'popularity', "created_at",
+            "color", "lined_non_lined", "cover_type", 'created_at')
+
         if from_date and to_date:
             from_date_obj = timezone.datetime.strptime(from_date, '%Y-%m-%d').replace(hour=0, minute=0, second=0, microsecond=0)
             to_date_obj = timezone.datetime.strptime(to_date, '%Y-%m-%d').replace(hour=23, minute=59, second=59, microsecond=999999)
             product_obj = product_obj.filter(created_at__gte=from_date_obj, created_at__lte=to_date_obj)
-        if color:
-            product_obj = product_obj.filter(color=color)
 
-        if lined_non_lined:
-            product_obj = product_obj.filter(lined_non_lined=lined_non_lined)
+        if category == "JournalBooks":
+            product_obj = product_obj.filter(category="JournalBooks")
+        if category == "WritingJournal":
+            product_obj = product_obj.filter(category="WritingJournal")
+        if category == "Others":
+            product_obj = product_obj.filter(category="Others")
 
-        if cover_type:
-            product_obj = product_obj.filter(cover_type=cover_type)
+        if colors:
+            product_obj = product_obj.filter(color__in=colors)
+
+        if lined_non_lineds:
+            product_obj = product_obj.filter(lined_non_lined__in=lined_non_lineds)
+
+        if cover_types:
+            product_obj = product_obj.filter(cover_type__in=cover_types)
+
         if title:
-            product_obj = product_obj.filter(title=title)
+            product_obj = product_obj.filter(title=title),
 
         if sort_by == 'price_low_to_high':
-            product_obj = product_obj.order_by('price')  
+            product_obj = product_obj.order_by('price')
         elif sort_by == 'price_high_to_low':
-            product_obj = product_obj.order_by('-price') 
+            product_obj = product_obj.order_by('-price')
         elif sort_by == 'popularity':
             product_obj = product_obj.order_by('-popularity')
         elif sort_by == 'latest':
             product_obj = product_obj.order_by('-id')
-        
-        category_counts = ProductModel.objects.values('category').annotate(count=Count('category'))
+
         for item in product_obj:
             if item['product_image']:
                 item['product_image'] = f"{base_url.rstrip('/')}/media/{item['product_image']}"
+        category_counts = ProductModel.objects.values('category').annotate(count=Count('category'))
+
         paginator = self.pagination_class()
         paginated_product = paginator.paginate_queryset(product_obj, request)
         response = paginator.get_paginated_response(paginated_product)
@@ -137,6 +154,9 @@ class ProductAPi(APIView):
         response.data['total_pages'] = paginator.page.paginator.num_pages
 
         return response
+
+
+
     
 
 # @method_decorator(cache_page(60 * 15), name='get')
@@ -220,25 +240,43 @@ class ForgetPasswordAPI(APIView):
         
 
 
+
 class AddToCartAPi(APIView):
     permission_classes = [IsAuthenticated]
+
     def post(self, request):
-        base_url = request.build_absolute_uri('/')
-        user = MyUser.objects.get(id=request.user.id)
+        user = request.user
+        customise_price = request.data.get('customise_price')
+        product_id = request.data.get('product_id', None)
+        base_url = request.build_absolute_uri('/').rstrip('/')
+        final_price = 0
+        product_price = 0
+        if product_id:
+            try:
+                product_obj = ProductModel.objects.get(id=product_id)
+                category_price = product_obj.category_type.price
+                product_price = product_obj.price if product_obj.price else 0
+                final_price = category_price + product_price if customise_price == "Yes" else product_price
+            except ProductModel.DoesNotExist:
+                return Response({"error": "Invalid product ID"}, status=status.HTTP_404_NOT_FOUND)
+        else:
+            product_obj = None
+        
+        cover_image = base64_to_image(request.data.get('cover'), "cover_img.png") if request.data.get('cover') else None
+        inner_image = base64_to_image(request.data.get('inner'), "inner_img.png") if request.data.get('inner') else None
+
         cart_user = UserCartModel.objects.create(
             cart_user=user,
-            name=request.data['name'],
-            heading=request.data['heading'],
-            description=request.data['description'],
-            currentSize=request.data['currentSize'],
-            quantity=request.data['quantity'],
-            boardSelectedOption=request.data['boardSelectedOption'],
-            cover=base64_to_image(request.data['cover'], "cover_img.png"),
-            inner=base64_to_image(request.data['inner'], "inner_img.png"),
-            price=request.data['price'])
-        cover_img_url = cart_user.cover.url if cart_user.cover else None
-        inner_img_url = cart_user.inner.url if cart_user.inner else None
-
+            cart_products=product_obj if product_obj else None,
+            name=request.data.get('name', ''),
+            heading=request.data.get('heading', ''),
+            description=request.data.get('description', ''),
+            currentSize=request.data.get('currentSize', ''),
+            quantity=request.data.get('quantity', 1),
+            boardSelectedOption=request.data.get('boardSelectedOption', ''),
+            cover=cover_image,
+            inner=inner_image,
+            price=final_price if final_price else request.data.get('price') )
         cart_data = {
             "cart_user": cart_user.cart_user.uuid,
             "quantity": cart_user.quantity,
@@ -248,10 +286,10 @@ class AddToCartAPi(APIView):
             "description": cart_user.description,
             "currentSize": cart_user.currentSize,
             "boardSelectedOption": cart_user.boardSelectedOption,
-            "cover": f"{base_url.rstrip('/')}{cover_img_url}" if cover_img_url else None,
-            "inner": f"{base_url.rstrip('/')}{inner_img_url}" if inner_img_url else None
-        }
-        return Response({"message": "Add to cart successfully", "data": cart_data}, status=status.HTTP_200_OK)
+            "cover": f"{base_url}{cart_user.cover.url}" if cart_user.cover else None,
+            "inner": f"{base_url}{cart_user.inner.url}" if cart_user.inner else None }
+        return Response({"message": "Added to cart successfully", "data": cart_data}, status=status.HTTP_200_OK)
+
 
 
 class GetUserCartAPi(APIView):
@@ -308,8 +346,36 @@ class OurProductsAPi(APIView):
     pagination_class = PageNumberPagination
     def get(self, request):
         base_url = request.build_absolute_uri('/')
-        product_obj = ProductModel.objects.values('title','disc','product_image','category','price','popularity','color','lined_non_lined','cover_type').order_by('?')
+        product_obj = ProductModel.objects.values('id','title','disc','product_image','category','price','popularity','color','lined_non_lined','cover_type').order_by('?')[:20]
         for item in product_obj:
             if item['product_image']:
                 item['product_image'] = f"{base_url.rstrip('/')}/media/{item['product_image']}"
         return Response({"message":"Data getting sucessfully","data":list(product_obj)},status=status.HTTP_200_OK)
+    
+
+class CategoryWiseProduct(APIView):
+    def get(self, request):
+        base_url = request.build_absolute_uri('/')
+        product_id = request.query_params.get('product_id')
+        try:
+            product = ProductModel.objects.get(id=product_id)
+            category_type = product.category_type
+            related_products = ProductModel.objects.filter(category_type=category_type).values("id","inner_img","cover_img","product_image","title","disc","category","price","popularity","color","lined_non_lined","cover_type","category_type__title","category_type__image","category_type__p_category", "category_type__phrase_flag","category_type__initial_flag","category_type__cover_logo_flag","category_type__inner_text_flag", "category_type__inner_logo_flag","category_type__price").order_by("-id")[:7]
+            for item in related_products:
+                if item['product_image']:
+                    item['product_image'] = f"{base_url.rstrip('/')}/media/{item['product_image']}"
+                if item['cover_img']:
+                    item['cover_img'] = f"{base_url.rstrip('/')}/media/{item['cover_img']}"
+                if item['inner_img']:
+                    item['inner_img'] = f"{base_url.rstrip('/')}/media/{item['inner_img']}"
+                if item['category_type__image']:
+                    item['category_type__image'] = f"{base_url.rstrip('/')}/media/{item['category_type__image']}"
+            return Response({
+                "message": "Data retrieved successfully",
+                "related_products": list(related_products)
+            }, status=200)
+        
+        except ProductModel.DoesNotExist:
+            return Response({"message": "Product not found"}, status=404)
+
+

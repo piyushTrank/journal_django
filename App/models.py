@@ -84,26 +84,41 @@ class MyUser(AbstractBaseUser,CommonTimePicker):
         return otp
     
 
+class ProductCategoryModel(CommonTimePicker):
+    title = models.CharField("Title",max_length=100, null=True,blank=True)
+    image = models.ImageField("Image", null=True, blank=True,upload_to='image')
+    p_category = models.CharField("Category", max_length=50, choices=PRODUCT_CATEGORY)
+    phrase_flag = models.BooleanField(default=False)
+    initial_flag = models.BooleanField(default=False)
+    cover_logo_flag = models.BooleanField(default=False)
+    inner_text_flag = models.BooleanField(default=False)
+    inner_logo_flag = models.BooleanField(default=False)
+    price = models.PositiveIntegerField("Price",default=0,blank=True,null=True)
+
+    def __str__(self) -> str:
+        return self.p_category
+
 class ProductModel(CommonTimePicker):
     title = models.CharField("Title",max_length=100, null=True,blank=True)
-    disc = models.CharField("Disc",max_length=100, null=True,blank=True)
+    disc = models.CharField("Disc",max_length=1000, null=True,blank=True)
     product_image = models.ImageField("Product Image", null=True, blank=True,upload_to='product_image')
     category = models.CharField("Category",max_length=20, default='JournalBooks', choices=CATEGORY)
     price = models.PositiveIntegerField("Price",default=0, blank=True, null=True)
     popularity = models.IntegerField("Popularity",default=0,null=True,blank=True)
-    color = models.CharField("Color Type", max_length=10, default='All', choices=COLOR)
+    color = models.CharField("Color Type", max_length=20, default='All', choices=COLOR)
     lined_non_lined = models.CharField("Lined non Lined", max_length=10, default='All', choices=LINED_NON_LINED)
-    cover_type = models.CharField("Cover Type", max_length=10, default='All', choices=COVER_TYPE)
-    # cover_img = models.ImageField("Cover Image", null=True, blank=True,upload_to='cover_image')
-    # inner_img = models.ImageField("Inner Image", null=True, blank=True,upload_to='inner_image')
+    cover_type = models.CharField("Cover Type", max_length=20, default='All', choices=COVER_TYPE)
+    cover_img = models.ImageField("Cover Image", null=True, blank=True,upload_to='cover_image')
+    inner_img = models.ImageField("Inner Image", null=True, blank=True,upload_to='inner_image')
+    category_type = models.ForeignKey(ProductCategoryModel, on_delete=models.CASCADE, related_name='category_type')
 
     def __str__(self):
         return self.title
-
+    
 
 class UserCartModel(CommonTimePicker):
     cart_user = models.ForeignKey(MyUser, on_delete=models.CASCADE, related_name="cart_user")
-    cart_products = models.OneToOneField(ProductModel, on_delete=models.CASCADE, related_name="cart_products",blank=True,null=True)
+    cart_products = models.ForeignKey(ProductModel, on_delete=models.CASCADE, related_name="cart_products",blank=True,null=True)
     
     name = models.CharField("Name", max_length=100,null=True,blank=True)
     heading = models.CharField("Heading", max_length=100,null=True,blank=True)
