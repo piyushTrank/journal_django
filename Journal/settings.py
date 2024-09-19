@@ -24,7 +24,8 @@ CSRF_TRUSTED_ORIGINS = [
     'http://192.168.0.143:3000',
     'http://192.168.0.71:3000',
     'http://3.6.39.73:8000',
-    'http://192.168.0.29:3000'
+    'http://192.168.0.29:3000',
+    'https://journals.tranktechnologies.com'
 
 ]
 

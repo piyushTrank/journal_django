@@ -105,7 +105,7 @@ class ProductModel(CommonTimePicker):
     category = models.CharField("Category",max_length=20, default='JournalBooks', choices=CATEGORY)
     price = models.PositiveIntegerField("Price",default=0, blank=True, null=True)
     popularity = models.IntegerField("Popularity",default=0,null=True,blank=True)
-    color = models.CharField("Color Type", max_length=20, default='All', choices=COLOR)
+    color = models.CharField("Color Type", max_length=20, null=True,blank=True)
     lined_non_lined = models.CharField("Lined non Lined", max_length=10, default='All', choices=LINED_NON_LINED)
     cover_type = models.CharField("Cover Type", max_length=20, default='All', choices=COVER_TYPE)
     cover_img = models.ImageField("Cover Image", null=True, blank=True,upload_to='cover_image')
