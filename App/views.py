@@ -142,7 +142,7 @@ class ProductAPi(APIView):
 
         for item in product_obj:
             if item['product_image']:
-                item['product_image'] = f"{base_url.rstrip('/')}/media/{item['product_image']}"
+                item['product_image'] = f"{base_url.rstrip('/')}/{item['product_image']}"
         category_counts = ProductModel.objects.values('category').annotate(count=Count('category'))
 
         paginator = self.pagination_class()
@@ -302,9 +302,9 @@ class GetUserCartAPi(APIView):
         ).order_by("-id")
         for item in cart_items:
             if item['cover']:
-                item['cover'] = f"{base_url.rstrip('/')}/media/{item['cover']}"
+                item['cover'] = f"{base_url.rstrip('/')}/{item['cover']}"
             if item['inner']:
-                item['inner'] = f"{base_url.rstrip('/')}/media/{item['inner']}"
+                item['inner'] = f"{base_url.rstrip('/')}/{item['inner']}"
         return Response({"message": "Cart data retrieved successfully", "data": list(cart_items)}, status=status.HTTP_200_OK)
 
 
@@ -349,7 +349,7 @@ class OurProductsAPi(APIView):
         product_obj = ProductModel.objects.values('id','title','disc','product_image','category','price','popularity','color','lined_non_lined','cover_type').order_by('?')[:20]
         for item in product_obj:
             if item['product_image']:
-                item['product_image'] = f"{base_url.rstrip('/')}/media/{item['product_image']}"
+                item['product_image'] = f"{base_url.rstrip('/')}/{item['product_image']}"
         return Response({"message":"Data getting sucessfully","data":list(product_obj)},status=status.HTTP_200_OK)
     
 
@@ -363,13 +363,13 @@ class CategoryWiseProduct(APIView):
             related_products = ProductModel.objects.filter(category_type=category_type).values("id","inner_img","cover_img","product_image","title","disc","category","price","popularity","color","lined_non_lined","cover_type","category_type__title","category_type__image","category_type__p_category", "category_type__phrase_flag","category_type__initial_flag","category_type__cover_logo_flag","category_type__inner_text_flag", "category_type__inner_logo_flag","category_type__price").order_by("-id")[:7]
             for item in related_products:
                 if item['product_image']:
-                    item['product_image'] = f"{base_url.rstrip('/')}/media/{item['product_image']}"
+                    item['product_image'] = f"{base_url.rstrip('/')}/{item['product_image']}"
                 if item['cover_img']:
-                    item['cover_img'] = f"{base_url.rstrip('/')}/media/{item['cover_img']}"
+                    item['cover_img'] = f"{base_url.rstrip('/')}/{item['cover_img']}"
                 if item['inner_img']:
-                    item['inner_img'] = f"{base_url.rstrip('/')}/media/{item['inner_img']}"
+                    item['inner_img'] = f"{base_url.rstrip('/')}/{item['inner_img']}"
                 if item['category_type__image']:
-                    item['category_type__image'] = f"{base_url.rstrip('/')}/media/{item['category_type__image']}"
+                    item['category_type__image'] = f"{base_url.rstrip('/')}/{item['category_type__image']}"
             return Response({
                 "message": "Data retrieved successfully",
                 "related_products": list(related_products)
