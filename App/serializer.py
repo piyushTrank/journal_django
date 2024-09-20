@@ -105,6 +105,18 @@ class UserCartSerializer(serializers.ModelSerializer):
             'cart_price',
         ]
 
+# class ProductSizeSerilizer(serializers.ModelSerializer):
+#     class Meta:
+#         model = ProductSizeModel
+#         fields = '__all__'
+
+# class UsercartSerilizer(serializers.ModelSerializer):
+#     product_size_user = ProductSizeSerilizer(source='product_size_user')
+#     class Meta:
+#         model = UserCartModel
+#         fields = '__all__'
+
+
 
     
 

@@ -34,3 +34,11 @@ class ProductCategoryAdmin(admin.ModelAdmin):
     search_fields = ('p_category',)  
     ordering = ('-created_at',)  
 admin.site.register(ProductCategoryModel, ProductCategoryAdmin)
+
+
+class ProductSizeAdmin(admin.ModelAdmin):
+    list_display = ('size_user', 'image', 'product_size',)
+    list_filter = ('created_at',)
+    search_fields = ('product_size'),
+    ordering = ('-created_at',) 
+admin.site.register(ProductSizeModel, ProductSizeAdmin) 

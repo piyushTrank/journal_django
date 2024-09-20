@@ -13,6 +13,8 @@ from django.views.decorators.cache import cache_page
 from django.utils.decorators import method_decorator
 from App.utlis import *
 from django.db.models import Count
+from django.db.models import Prefetch
+
 class LoginAPI(APIView):
     def post(self, request):
         try:
@@ -142,7 +144,7 @@ class ProductAPi(APIView):
 
         for item in product_obj:
             if item['product_image']:
-                item['product_image'] = f"{base_url.rstrip('/')}/{item['product_image']}"
+                item['product_image'] = f"{base_url.rstrip('/')}/media/{item['product_image']}"
         category_counts = ProductModel.objects.values('category').annotate(count=Count('category'))
 
         paginator = self.pagination_class()
@@ -249,8 +251,11 @@ class AddToCartAPi(APIView):
         customise_price = request.data.get('customise_price')
         product_id = request.data.get('product_id', None)
         base_url = request.build_absolute_uri('/').rstrip('/')
+        current_size_id = request.data.get('currentSize')
+        print(current_size_id,"current_size_id")
         final_price = 0
         product_price = 0
+      
         if product_id:
             try:
                 product_obj = ProductModel.objects.get(id=product_id)
@@ -261,22 +266,32 @@ class AddToCartAPi(APIView):
                 return Response({"error": "Invalid product ID"}, status=status.HTTP_404_NOT_FOUND)
         else:
             product_obj = None
-        
+
         cover_image = base64_to_image(request.data.get('cover'), "cover_img.png") if request.data.get('cover') else None
         inner_image = base64_to_image(request.data.get('inner'), "inner_img.png") if request.data.get('inner') else None
 
+        if current_size_id !='defult':
+            try:
+                product_size_obj = ProductSizeModel.objects.get(id=current_size_id)
+            except ProductSizeModel.DoesNotExist:
+                return Response({"error": "Invalid size ID"}, status=status.HTTP_404_NOT_FOUND)
+        else:
+            product_size_obj = None
+
         cart_user = UserCartModel.objects.create(
             cart_user=user,
-            cart_products=product_obj if product_obj else None,
+            cart_products=product_obj,
+            product_size_user=product_size_obj,
             name=request.data.get('name', ''),
             heading=request.data.get('heading', ''),
             description=request.data.get('description', ''),
-            currentSize=request.data.get('currentSize', ''),
             quantity=request.data.get('quantity', 1),
             boardSelectedOption=request.data.get('boardSelectedOption', ''),
             cover=cover_image,
             inner=inner_image,
-            price=final_price if final_price else request.data.get('price') )
+            price=final_price if final_price else request.data.get('price')
+        )
+
         cart_data = {
             "cart_user": cart_user.cart_user.uuid,
             "quantity": cart_user.quantity,
@@ -287,7 +302,9 @@ class AddToCartAPi(APIView):
             "currentSize": cart_user.currentSize,
             "boardSelectedOption": cart_user.boardSelectedOption,
             "cover": f"{base_url}{cart_user.cover.url}" if cart_user.cover else None,
-            "inner": f"{base_url}{cart_user.inner.url}" if cart_user.inner else None }
+            "inner": f"{base_url}{cart_user.inner.url}" if cart_user.inner else None
+        }
+
         return Response({"message": "Added to cart successfully", "data": cart_data}, status=status.HTTP_200_OK)
 
 
@@ -299,12 +316,12 @@ class GetUserCartAPi(APIView):
         base_url = request.build_absolute_uri('/')
         cart_items = UserCartModel.objects.filter(cart_user=request.user).values(
             "id","name", "heading", "description", "currentSize", "quantity", "boardSelectedOption", "cover", "inner", "price"
-        ).order_by("-id")
+        )
         for item in cart_items:
             if item['cover']:
-                item['cover'] = f"{base_url.rstrip('/')}/{item['cover']}"
+                item['cover'] = f"{base_url.rstrip('/')}/media/{item['cover']}"
             if item['inner']:
-                item['inner'] = f"{base_url.rstrip('/')}/{item['inner']}"
+                item['inner'] = f"{base_url.rstrip('/')}/media/{item['inner']}"
         return Response({"message": "Cart data retrieved successfully", "data": list(cart_items)}, status=status.HTTP_200_OK)
 
 
@@ -349,7 +366,7 @@ class OurProductsAPi(APIView):
         product_obj = ProductModel.objects.values('id','title','disc','product_image','category','price','popularity','color','lined_non_lined','cover_type').order_by('?')[:20]
         for item in product_obj:
             if item['product_image']:
-                item['product_image'] = f"{base_url.rstrip('/')}/{item['product_image']}"
+                item['product_image'] = f"{base_url.rstrip('/')}/media/{item['product_image']}"
         return Response({"message":"Data getting sucessfully","data":list(product_obj)},status=status.HTTP_200_OK)
     
 
@@ -361,15 +378,16 @@ class CategoryWiseProduct(APIView):
             product = ProductModel.objects.get(id=product_id)
             category_type = product.category_type
             related_products = ProductModel.objects.filter(category_type=category_type).values("id","inner_img","cover_img","product_image","title","disc","category","price","popularity","color","lined_non_lined","cover_type","category_type__title","category_type__image","category_type__p_category", "category_type__phrase_flag","category_type__initial_flag","category_type__cover_logo_flag","category_type__inner_text_flag", "category_type__inner_logo_flag","category_type__price").order_by("-id")[:7]
+            
             for item in related_products:
                 if item['product_image']:
-                    item['product_image'] = f"{base_url.rstrip('/')}/{item['product_image']}"
+                    item['product_image'] = f"{base_url.rstrip('/')}/media/{item['product_image']}"
                 if item['cover_img']:
-                    item['cover_img'] = f"{base_url.rstrip('/')}/{item['cover_img']}"
+                    item['cover_img'] = f"{base_url.rstrip('/')}/media/{item['cover_img']}"
                 if item['inner_img']:
-                    item['inner_img'] = f"{base_url.rstrip('/')}/{item['inner_img']}"
+                    item['inner_img'] = f"{base_url.rstrip('/')}/media/{item['inner_img']}"
                 if item['category_type__image']:
-                    item['category_type__image'] = f"{base_url.rstrip('/')}/{item['category_type__image']}"
+                    item['category_type__image'] = f"{base_url.rstrip('/')}/media/{item['category_type__image']}"
             return Response({
                 "message": "Data retrieved successfully",
                 "related_products": list(related_products)
@@ -378,4 +396,30 @@ class CategoryWiseProduct(APIView):
         except ProductModel.DoesNotExist:
             return Response({"message": "Product not found"}, status=404)
 
+
+
+
+class ProductSizeApi(APIView):
+    def get(self, request):
+        base_url = request.build_absolute_uri('/')
+        product_id = request.query_params.get('product_id')
+
+        try:
+            product = ProductModel.objects.get(id=product_id)
+            category_type = product.category_type
+
+            related_products = ProductModel.objects.filter(
+                category_type=category_type
+            ).prefetch_related(
+                Prefetch('size_user', queryset=ProductSizeModel.objects.all())
+            )
+            sizes = [{
+                    'id': size.id,'product_size': size.product_size,'image': f"{base_url.rstrip('/')}/media/{size.image}" if size.image else None
+                }
+                for product in related_products
+                for size in product.size_user.all()
+            ]
+            return Response({"message": "Data retrieved successfully","data": sizes}, status=200)
+        except ProductModel.DoesNotExist:
+            return Response({"message": "Product not found"}, status=404)
 

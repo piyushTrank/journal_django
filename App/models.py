@@ -114,12 +114,17 @@ class ProductModel(CommonTimePicker):
 
     def __str__(self):
         return self.title
-    
+
+class ProductSizeModel(CommonTimePicker):
+    size_user = models.ForeignKey(ProductModel, on_delete=models.CASCADE, related_name='size_user')
+    image = models.ImageField("Image", null=True, blank=True,upload_to='image')
+    product_size = models.CharField("Product size", max_length=100,null=True,blank=True)
+
 
 class UserCartModel(CommonTimePicker):
     cart_user = models.ForeignKey(MyUser, on_delete=models.CASCADE, related_name="cart_user")
     cart_products = models.ForeignKey(ProductModel, on_delete=models.CASCADE, related_name="cart_products",blank=True,null=True)
-    
+    product_size_user = models.ForeignKey(ProductSizeModel, on_delete=models.CASCADE,related_name='product_size_user',blank=True,null=True)
     name = models.CharField("Name", max_length=100,null=True,blank=True)
     heading = models.CharField("Heading", max_length=100,null=True,blank=True)
     description = models.CharField("Description", max_length=100,null=True,blank=True)
@@ -130,6 +135,10 @@ class UserCartModel(CommonTimePicker):
     inner = models.ImageField("Inner Image", null=True, blank=True,upload_to='edit_cover_img')
     price = models.PositiveIntegerField("Price",default=0, blank=True, null=True)
 
+    class Meta:
+        ordering = ('-created_at',)
+
     def __str__(self) -> str:
         return self.name
+
 
