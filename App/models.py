@@ -88,11 +88,7 @@ class ProductCategoryModel(CommonTimePicker):
     title = models.CharField("Title",max_length=100, null=True,blank=True)
     image = models.ImageField("Image", null=True, blank=True,upload_to='image')
     p_category = models.CharField("Category", max_length=50, choices=PRODUCT_CATEGORY)
-    phrase_flag = models.BooleanField(default=False)
-    initial_flag = models.BooleanField(default=False)
-    cover_logo_flag = models.BooleanField(default=False)
-    inner_text_flag = models.BooleanField(default=False)
-    inner_logo_flag = models.BooleanField(default=False)
+   
 
     def __str__(self) -> str:
         return self.p_category
@@ -111,6 +107,11 @@ class ProductModel(CommonTimePicker):
     inner_img = models.ImageField("Inner Image", null=True, blank=True,upload_to='inner_image')
     category_type = models.ForeignKey(ProductCategoryModel, on_delete=models.CASCADE, related_name='category_type')
     additional_price = models.PositiveIntegerField("Additional Price",default=0, blank=True, null=True)
+    phrase_flag = models.BooleanField(default=True)
+    initial_flag = models.BooleanField(default=True)
+    cover_logo_flag = models.BooleanField(default=True)
+    inner_text_flag = models.BooleanField(default=True)
+    inner_logo_flag = models.BooleanField(default=True)
 
 
     def save(self, *args, **kwargs):
