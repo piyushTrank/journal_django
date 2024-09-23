@@ -88,15 +88,12 @@ class ProductAPi(APIView):
 
     def post(self, request):
         base_url = request.build_absolute_uri('/')
-        data = request.data  # Extract data from the request body
-
-        # Extract filters from the request body
+        data = request.data  
         from_date = data.get('from_date')
         to_date = data.get('to_date')
         sort_by = data.get('sort_by', None)
         color_query = ', '.join(data.get('color', []))
         lined_non_lined = ', '.join(data.get('lined_non_lined', []))
-        print(lined_non_lined, type(lined_non_lined))
         cover_type = ', '.join(data.get('cover_type', []))
         title = data.get('title')
         category = data.get('category')
@@ -131,7 +128,7 @@ class ProductAPi(APIView):
             product_obj = product_obj.filter(cover_type__in=cover_types)
 
         if title:
-            product_obj = product_obj.filter(title=title),
+            product_obj = product_obj.filter(title__icontains=title)
 
         if sort_by == 'price_low_to_high':
             product_obj = product_obj.order_by('price')
@@ -259,9 +256,9 @@ class AddToCartAPi(APIView):
         if product_id:
             try:
                 product_obj = ProductModel.objects.get(id=product_id)
-                category_price = product_obj.category_type.price
+                additional_price = product_obj.additional_price
                 product_price = product_obj.price if product_obj.price else 0
-                final_price = category_price + product_price if customise_price == "Yes" else product_price
+                final_price = additional_price + product_price if customise_price == "Yes" else product_price
             except ProductModel.DoesNotExist:
                 return Response({"error": "Invalid product ID"}, status=status.HTTP_404_NOT_FOUND)
         else:
@@ -423,3 +420,11 @@ class ProductSizeApi(APIView):
         except ProductModel.DoesNotExist:
             return Response({"message": "Product not found"}, status=404)
 
+
+class SendColorAPi(APIView):
+    def get(self, request):
+        try:
+            colors = ProductModel.objects.values_list("color",flat=True).distinct()
+            return Response({"message":"Data getting sucessfully","data":colors},status=status.HTTP_200_OK)
+        except:
+            return Response({"message":"Data not found"},status=status.HTTP_404_NOT_FOUND)
