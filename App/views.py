@@ -374,7 +374,7 @@ class CategoryWiseProduct(APIView):
         try:
             product = ProductModel.objects.get(id=product_id)
             category_type = product.category_type
-            related_products = ProductModel.objects.filter(category_type=category_type).values("id","inner_img","cover_img","product_image","title","disc","category","price","popularity","color","lined_non_lined","cover_type","category_type__title","category_type__image","category_type__p_category", "category_type__phrase_flag","category_type__initial_flag","category_type__cover_logo_flag","category_type__inner_text_flag", "category_type__inner_logo_flag","category_type__price").order_by("-id")[:7]
+            related_products = ProductModel.objects.filter(category_type=category_type).values("id","inner_img","cover_img","product_image","title","disc","category","price","popularity","color","lined_non_lined","cover_type","category_type__title","category_type__image","category_type__p_category", "phrase_flag","initial_flag","cover_logo_flag","inner_text_flag", "inner_logo_flag","additional_price").order_by("-id")[:7]
             
             for item in related_products:
                 if item['product_image']:
