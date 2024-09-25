@@ -14,7 +14,6 @@ from django.utils.decorators import method_decorator
 from App.utlis import *
 from django.db.models import Count
 from django.db.models import Prefetch
-from django.views.decorators.csrf import csrf_exempt
 
 class LoginAPI(APIView):
     def post(self, request):
@@ -84,7 +83,7 @@ class SignupApi(APIView):
         return Response(response, status=status.HTTP_400_BAD_REQUEST)
         
 # @method_decorator(cache_page(60 * 15), name='get')
-@csrf_exempt
+
 class ProductAPi(APIView):
     pagination_class = PageNumberPagination
 
