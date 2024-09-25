@@ -26,8 +26,9 @@ CSRF_TRUSTED_ORIGINS = [
     'http://3.6.39.73:8000',
     'http://192.168.0.29:3000',
     'https://journals.tranktechnologies.com'
-
 ]
+CSRF_COOKIE_SECURE = False
+
 
 # Application definition
 
@@ -133,12 +134,14 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/django-static/'
 STATICFILES_DIRS = [
     BASE_DIR / "static"
 ]
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 
 # Default primary key field type
