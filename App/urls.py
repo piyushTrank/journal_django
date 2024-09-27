@@ -18,4 +18,5 @@ urlpatterns = [
     path('category-wise-product/', CategoryWiseProduct.as_view()),
     path('product-size/', ProductSizeApi.as_view()),
     path('colors/', SendColorAPi.as_view()),
+    path('cart-count/', CartCountApi.as_view()),
 ]

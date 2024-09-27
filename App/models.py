@@ -64,6 +64,9 @@ class MyUser(AbstractBaseUser,CommonTimePicker):
     
     objects = MyUserManager()
     USERNAME_FIELD = 'email'
+    class Meta:
+        verbose_name = "User"
+        verbose_name_plural = "Users"
 
     def __str__(self):
         return f"{self.uuid}_{self.email}" 
@@ -88,7 +91,9 @@ class ProductCategoryModel(CommonTimePicker):
     title = models.CharField("Title",max_length=100, null=True,blank=True)
     image = models.ImageField("Image", null=True, blank=True,upload_to='image')
     p_category = models.CharField("Category", max_length=50, choices=PRODUCT_CATEGORY)
-   
+    class Meta:
+        verbose_name = "Product Category"
+        verbose_name_plural = "Product Categorys"
 
     def __str__(self) -> str:
         return self.p_category
@@ -112,7 +117,9 @@ class ProductModel(CommonTimePicker):
     cover_logo_flag = models.BooleanField(default=True)
     inner_text_flag = models.BooleanField(default=True)
     inner_logo_flag = models.BooleanField(default=True)
-
+    class Meta:
+        verbose_name = "Product"
+        verbose_name_plural = "Products"
 
     def save(self, *args, **kwargs):
         if self.color:
@@ -127,6 +134,9 @@ class ProductSizeModel(CommonTimePicker):
     image = models.ImageField("Image", null=True, blank=True,upload_to='image')
     product_size = models.CharField("Product size", max_length=100,null=True,blank=True)
 
+    class Meta:
+        verbose_name = "Product Size"
+        verbose_name_plural = "Product Sizes"
 
 class UserCartModel(CommonTimePicker):
     cart_user = models.ForeignKey(MyUser, on_delete=models.CASCADE, related_name="cart_user")
@@ -134,18 +144,64 @@ class UserCartModel(CommonTimePicker):
     product_size_user = models.ForeignKey(ProductSizeModel, on_delete=models.CASCADE,related_name='product_size_user',blank=True,null=True)
     name = models.CharField("Name", max_length=100,null=True,blank=True)
     heading = models.CharField("Heading", max_length=100,null=True,blank=True)
-    description = models.CharField("Description", max_length=100,null=True,blank=True)
+    description = models.CharField("Description", max_length=1000,null=True,blank=True)
     currentSize = models.CharField("Size", max_length=100,null=True,blank=True)
     quantity = models.PositiveIntegerField(default=1)
     boardSelectedOption = models.CharField("Board Selected",max_length=20,choices=BOARD_SELECTED)
     cover = models.ImageField("Cover Image", null=True, blank=True,upload_to='edit_cover_img')
     inner = models.ImageField("Inner Image", null=True, blank=True,upload_to='edit_cover_img')
     price = models.PositiveIntegerField("Price",default=0, blank=True, null=True)
+    total_price = models.PositiveIntegerField("Total Price",default=0, blank=True, null=True)
 
     class Meta:
         ordering = ('-created_at',)
+        verbose_name = "User Cart"
+        verbose_name_plural = "User Carts"
+        
 
     def __str__(self) -> str:
         return self.name
+    
+class PersentModel(CommonTimePicker):
+    quantity = models.PositiveIntegerField("Quantity",default=0, blank=True, null=True)
+    persent = models.PositiveIntegerField("Persent",default=0, blank=True, null=True)
+    disc = models.CharField("Disc",max_length=1000, null=True,blank=True)
+    # def __str__(self):
+    #     return self.quantity
+    class Meta:
+        verbose_name = "Discount"
+        verbose_name_plural = "Discounts"
+
+
+class CouponModel(CommonTimePicker):
+    coupon_code = models.CharField(max_length=50, unique=True)
+    discount_percentage = models.PositiveIntegerField()
+    class Meta:
+        verbose_name = "Coupon"
+        verbose_name_plural = "Coupons"
+
+    def __str__(self):
+        return f"{self.coupon_code}"
+
+    def save(self, *args, **kwargs):
+        super(CouponModel, self).save(*args, **kwargs)
+        users = MyUser.objects.all()
+        for user in users:
+            CouponUserModel.objects.create(
+                coupon_link=self,
+                coupon_user=user
+            )
+class CouponUserModel(CommonTimePicker):
+    coupon_link = models.ForeignKey(CouponModel, on_delete=models.CASCADE, related_name='coupon_link')
+    coupon_user = models.OneToOneField(MyUser, on_delete=models.CASCADE, related_name='coupon_user')
+    applied = models.BooleanField(default=False)
+    class Meta:
+        verbose_name = "User linked Coupon"
+        verbose_name_plural = "User linked Coupons"
+
+    def __str__(self):
+        return f"{self.coupon_user.email} - {self.coupon_link.coupon_code}"
+
+
 
 

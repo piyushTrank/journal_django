@@ -14,12 +14,14 @@ from django.utils.decorators import method_decorator
 from App.utlis import *
 from django.db.models import Count
 from django.db.models import Prefetch
+from django.db.models import Sum
+
 
 class LoginAPI(APIView):
     def post(self, request):
         try:
             user = MyUser.objects.get(email=request.data.get("email"))
-            if user.user_type == "Admin":
+            if user.user_type != "Client":
                 return Response({"success": False, "message": "Invalid user type."}, status=status.HTTP_400_BAD_REQUEST)
 
         except MyUser.DoesNotExist:
@@ -243,22 +245,20 @@ class ForgetPasswordAPI(APIView):
 
 class AddToCartAPi(APIView):
     permission_classes = [IsAuthenticated]
-
     def post(self, request):
         user = request.user
         customise_price = request.data.get('customise_price')
         product_id = request.data.get('product_id', None)
         base_url = request.build_absolute_uri('/').rstrip('/')
         current_size_id = request.data.get('currentSize')
-        print(current_size_id,"current_size_id")
+        quantity = int(request.data.get('quantity', 1))
         final_price = 0
         product_price = 0
-      
         if product_id:
             try:
                 product_obj = ProductModel.objects.get(id=product_id)
                 additional_price = product_obj.additional_price
-                product_price = product_obj.price if product_obj.price else 0
+                product_price = product_obj.price or 0
                 final_price = additional_price + product_price if customise_price == "Yes" else product_price
             except ProductModel.DoesNotExist:
                 return Response({"error": "Invalid product ID"}, status=status.HTTP_404_NOT_FOUND)
@@ -267,14 +267,39 @@ class AddToCartAPi(APIView):
 
         cover_image = base64_to_image(request.data.get('cover'), "cover_img.png") if request.data.get('cover') else None
         inner_image = base64_to_image(request.data.get('inner'), "inner_img.png") if request.data.get('inner') else None
-
-        if current_size_id !='defult':
+        if current_size_id != 'default':
             try:
                 product_size_obj = ProductSizeModel.objects.get(id=current_size_id)
             except ProductSizeModel.DoesNotExist:
                 return Response({"error": "Invalid size ID"}, status=status.HTTP_404_NOT_FOUND)
         else:
             product_size_obj = None
+
+        discount_percentage = 0
+        if quantity in PersentModel.objects.values_list("quantity", flat=True):
+            try:
+                persent_entry = PersentModel.objects.get(quantity=quantity)
+                discount_percentage = int(persent_entry.persent)
+            except PersentModel.DoesNotExist:
+                discount_percentage = 0
+        if discount_percentage > 0:
+            total_price = final_price * quantity
+            discount_amount = total_price * (discount_percentage / 100)
+            final_price = total_price - discount_amount
+        else:
+            final_price = final_price * quantity
+        
+        # coupon_discount = 0
+        # if request.data.get('coupon') in CouponModel.objects.get(coupon_code=request.data.get('coupon')):
+        #     coupon_user = CouponUserModel.objects.get(coupon_user=user)
+        #     if coupon_user.applied == False:
+        #         coupon_discount = coupon_user.coupon_link.discount_percentage
+        #         coupon_discount_amount = total_price * (coupon_discount / 100)
+        #         total_price -= coupon_discount_amount
+
+        #     coupon_user.applied = True
+        #     coupon_user.save()
+
 
         cart_user = UserCartModel.objects.create(
             cart_user=user,
@@ -283,13 +308,13 @@ class AddToCartAPi(APIView):
             name=request.data.get('name', ''),
             heading=request.data.get('heading', ''),
             description=request.data.get('description', ''),
-            quantity=request.data.get('quantity', 1),
+            quantity=quantity,
             boardSelectedOption=request.data.get('boardSelectedOption', ''),
             cover=cover_image,
             inner=inner_image,
-            price=final_price if final_price else request.data.get('price')
+            price=product_obj.price,
+            total_price=final_price
         )
-
         cart_data = {
             "cart_user": cart_user.cart_user.uuid,
             "quantity": cart_user.quantity,
@@ -297,12 +322,12 @@ class AddToCartAPi(APIView):
             "name": cart_user.name,
             "heading": cart_user.heading,
             "description": cart_user.description,
-            "currentSize": cart_user.currentSize,
+            "currentSize": cart_user.product_size_user.id if cart_user.product_size_user else None,
             "boardSelectedOption": cart_user.boardSelectedOption,
             "cover": f"{base_url}{cart_user.cover.url}" if cart_user.cover else None,
-            "inner": f"{base_url}{cart_user.inner.url}" if cart_user.inner else None
+            "inner": f"{base_url}{cart_user.inner.url}" if cart_user.inner else None,
+            "discount_applied": f"{discount_percentage}%"
         }
-
         return Response({"message": "Added to cart successfully", "data": cart_data}, status=status.HTTP_200_OK)
 
 
@@ -313,14 +338,15 @@ class GetUserCartAPi(APIView):
     def get(self, request):
         base_url = request.build_absolute_uri('/')
         cart_items = UserCartModel.objects.filter(cart_user=request.user).values(
-            "id","name", "heading", "description", "currentSize", "quantity", "boardSelectedOption", "cover", "inner", "price"
+            "id","name", "heading", "description", "currentSize", "quantity", "boardSelectedOption", "cover", "inner", "price","total_price"
         )
+        total_price_sum = UserCartModel.objects.filter(cart_user=request.user).aggregate(Sum('total_price'))['total_price__sum'] or 0
         for item in cart_items:
             if item['cover']:
                 item['cover'] = f"{base_url.rstrip('/')}/media/{item['cover']}"
             if item['inner']:
                 item['inner'] = f"{base_url.rstrip('/')}/media/{item['inner']}"
-        return Response({"message": "Cart data retrieved successfully", "data": list(cart_items)}, status=status.HTTP_200_OK)
+        return Response({"message": "Cart data retrieved successfully", "data": list(cart_items),"total_price_sum":total_price_sum}, status=status.HTTP_200_OK)
 
 
 
@@ -342,17 +368,37 @@ class RemoveCartItemAPi(APIView):
 class EncreaseDeCartItemQuantityAPi(APIView):
     permission_classes = [IsAuthenticated]
     def put(self, request):
+        discount_percentage = ''
         item_id = request.data.get('id')
-        quantity_obj = request.data.get('quantity')  
+        quantity_obj = request.data.get('quantity')
         if not item_id:
             return Response({"message": "Item ID is required"}, status=status.HTTP_400_BAD_REQUEST)
         try:
             cart_item = UserCartModel.objects.get(id=item_id, cart_user=request.user)
             cart_item.quantity = int(quantity_obj)
+            cart_item.total_price = cart_item.price * int(quantity_obj)
+            if (cart_item.quantity in PersentModel.objects.all().values_list("quantity",flat=True)):
+                persent_entry = PersentModel.objects.get(quantity=cart_item.quantity)
+                discount_percentage = int(persent_entry.persent)
+                print("discount_percentage",discount_percentage)
+                if discount_percentage > 0:
+                    cart_item.quantity = int(quantity_obj)
+                    original_price = cart_item.price * quantity_obj
+                    print("original_price",original_price)
+                    discount = original_price * ((100 - discount_percentage) / 100)
+                    cart_item.total_price = discount
             cart_item.save()
-            return Response({"message": "Quantity Added successfully", "quantity": cart_item.quantity}, status=status.HTTP_200_OK)
+
+            return Response({
+                "message": "Quantity updated successfully",
+                "quantity": cart_item.quantity,
+                "price": cart_item.price,
+                "discount_applied": f"{discount_percentage}%"
+            }, status=status.HTTP_200_OK)
+
         except UserCartModel.DoesNotExist:
             return Response({"message": "Cart item not found"}, status=status.HTTP_404_NOT_FOUND)
+
 
 
 
@@ -429,3 +475,13 @@ class SendColorAPi(APIView):
             return Response({"message":"Data getting sucessfully","data":colors},status=status.HTTP_200_OK)
         except:
             return Response({"message":"Data not found"},status=status.HTTP_404_NOT_FOUND)
+        
+
+class CartCountApi(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self, request):
+        try:
+            cart_count = UserCartModel.objects.filter(cart_user=request.user).count()
+            return Response({"message": "Count of cart items.", "count": cart_count}, status=status.HTTP_200_OK)
+        except:
+            return Response({"message": "Data not found."}, status=status.HTTP_404_NOT_FOUND)

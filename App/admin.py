@@ -42,3 +42,25 @@ class ProductSizeAdmin(admin.ModelAdmin):
     search_fields = ('product_size'),
     ordering = ('-created_at',) 
 admin.site.register(ProductSizeModel, ProductSizeAdmin) 
+
+
+class PersentAdmin(admin.ModelAdmin):
+    list_display = ('persent', 'quantity',)
+    list_filter = ('created_at',)
+    ordering = ('-created_at',) 
+admin.site.register(PersentModel, PersentAdmin) 
+
+
+
+class CouponAdmin(admin.ModelAdmin):
+    list_display = ('coupon_code', 'discount_percentage',)
+    list_filter = ('created_at',)
+    ordering = ('-created_at',) 
+admin.site.register(CouponModel, CouponAdmin) 
+
+
+class CouponUserAdmin(admin.ModelAdmin):
+    list_display = ('coupon_link', 'coupon_user','applied',)
+    list_filter = ('created_at',)
+    ordering = ('-created_at',) 
+admin.site.register(CouponUserModel, CouponUserAdmin) 
