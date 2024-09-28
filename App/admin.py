@@ -3,7 +3,7 @@ from App.models import *
 
 
 class MyUserAdmin(admin.ModelAdmin):
-    list_display = ('user_type', 'email', 'mobile', 'first_name', 'last_name', "gender","age")  
+    list_display = ('user_type', 'email', 'mobile', 'first_name', 'last_name', "gender","age","cart_total")  
     list_filter = ('created_at',) 
     search_fields = ('first_name',)  
     ordering = ('-created_at',)  
@@ -45,7 +45,7 @@ admin.site.register(ProductSizeModel, ProductSizeAdmin)
 
 
 class PersentAdmin(admin.ModelAdmin):
-    list_display = ('persent', 'quantity',)
+    list_display = ('persent', 'min_qty','max_qty','disc',)
     list_filter = ('created_at',)
     ordering = ('-created_at',) 
 admin.site.register(PersentModel, PersentAdmin) 
@@ -53,14 +53,9 @@ admin.site.register(PersentModel, PersentAdmin)
 
 
 class CouponAdmin(admin.ModelAdmin):
-    list_display = ('coupon_code', 'discount_percentage',)
+    list_display = ('coupon_code', 'discount_amount','min_amount','applied',)
     list_filter = ('created_at',)
     ordering = ('-created_at',) 
 admin.site.register(CouponModel, CouponAdmin) 
 
 
-class CouponUserAdmin(admin.ModelAdmin):
-    list_display = ('coupon_link', 'coupon_user','applied',)
-    list_filter = ('created_at',)
-    ordering = ('-created_at',) 
-admin.site.register(CouponUserModel, CouponUserAdmin) 

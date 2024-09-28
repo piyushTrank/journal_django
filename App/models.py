@@ -8,7 +8,8 @@ import jwt
 from Journal.settings import *
 from django.utils import timezone
 from django.conf import settings
-
+from django.core.exceptions import ValidationError
+from django.utils.translation import gettext_lazy as _
 
 class CommonTimePicker(models.Model):
     created_at = models.DateTimeField("Created Date", auto_now_add=True)
@@ -55,6 +56,7 @@ class MyUser(AbstractBaseUser,CommonTimePicker):
     gender = models.CharField("Gender", max_length=256, blank=True)
     age = models.DateField("Age", blank=True, null= True)
     otp = models.CharField('OTP', max_length=4, blank=True, null=True)
+    cart_total = models.PositiveIntegerField("Cart Total",blank=True,null=True)
 
     is_superuser = models.BooleanField("Super User", default=False)
     is_staff = models.BooleanField("Staff", default=False)
@@ -163,7 +165,8 @@ class UserCartModel(CommonTimePicker):
         return self.name
     
 class PersentModel(CommonTimePicker):
-    quantity = models.PositiveIntegerField("Quantity",default=0, blank=True, null=True)
+    min_qty = models.PositiveIntegerField("Min Quantity",default=0, blank=True, null=True)
+    max_qty = models.PositiveIntegerField("Max Quantity",default=0, blank=True, null=True)
     persent = models.PositiveIntegerField("Persent",default=0, blank=True, null=True)
     disc = models.CharField("Disc",max_length=1000, null=True,blank=True)
     # def __str__(self):
@@ -173,9 +176,14 @@ class PersentModel(CommonTimePicker):
         verbose_name_plural = "Discounts"
 
 
+
+
 class CouponModel(CommonTimePicker):
+    coupon_user = models.ForeignKey(MyUser, on_delete=models.CASCADE, related_name="coupon_user")
     coupon_code = models.CharField(max_length=50, unique=True)
-    discount_percentage = models.PositiveIntegerField()
+    discount_amount = models.PositiveIntegerField()
+    min_amount = models.PositiveIntegerField()
+    applied = models.BooleanField(default=False)
     class Meta:
         verbose_name = "Coupon"
         verbose_name_plural = "Coupons"
@@ -183,25 +191,15 @@ class CouponModel(CommonTimePicker):
     def __str__(self):
         return f"{self.coupon_code}"
 
+    def clean(self):
+        if self.min_amount <= self.discount_amount:
+            raise ValidationError({
+                'min_amount': _('Minimum amount must be greater than the discount amount.')
+            })
+
     def save(self, *args, **kwargs):
-        super(CouponModel, self).save(*args, **kwargs)
-        users = MyUser.objects.all()
-        for user in users:
-            CouponUserModel.objects.create(
-                coupon_link=self,
-                coupon_user=user
-            )
-class CouponUserModel(CommonTimePicker):
-    coupon_link = models.ForeignKey(CouponModel, on_delete=models.CASCADE, related_name='coupon_link')
-    coupon_user = models.OneToOneField(MyUser, on_delete=models.CASCADE, related_name='coupon_user')
-    applied = models.BooleanField(default=False)
-    class Meta:
-        verbose_name = "User linked Coupon"
-        verbose_name_plural = "User linked Coupons"
-
-    def __str__(self):
-        return f"{self.coupon_user.email} - {self.coupon_link.coupon_code}"
-
+        self.clean()
+        super().save(*args, **kwargs)
 
 
 

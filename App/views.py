@@ -13,15 +13,13 @@ from django.views.decorators.cache import cache_page
 from django.utils.decorators import method_decorator
 from App.utlis import *
 from django.db.models import Count
-from django.db.models import Prefetch
-from django.db.models import Sum
-
+from django.db.models import Prefetch ,Sum, Q
 
 class LoginAPI(APIView):
     def post(self, request):
         try:
             user = MyUser.objects.get(email=request.data.get("email"))
-            if user.user_type != "Client":
+            if user.user_type == "Admin":
                 return Response({"success": False, "message": "Invalid user type."}, status=status.HTTP_400_BAD_REQUEST)
 
         except MyUser.DoesNotExist:
@@ -276,30 +274,37 @@ class AddToCartAPi(APIView):
             product_size_obj = None
 
         discount_percentage = 0
-        if quantity in PersentModel.objects.values_list("quantity", flat=True):
-            try:
-                persent_entry = PersentModel.objects.get(quantity=quantity)
-                discount_percentage = int(persent_entry.persent)
-            except PersentModel.DoesNotExist:
-                discount_percentage = 0
+        try:
+            persent_entry = PersentModel.objects.filter(Q(min_qty__lte=quantity) & Q(max_qty__gt=quantity)).first()
+            if not persent_entry and PersentModel.objects.exists():
+                persent_entry = PersentModel.objects.filter(max_qty__lt=quantity).order_by('-max_qty').first()
+
+            discount_percentage = int(persent_entry.persent) if persent_entry else 0
+        except:
+            discount_percentage = 0
         if discount_percentage > 0:
             total_price = final_price * quantity
             discount_amount = total_price * (discount_percentage / 100)
             final_price = total_price - discount_amount
         else:
             final_price = final_price * quantity
-        
-        # coupon_discount = 0
-        # if request.data.get('coupon') in CouponModel.objects.get(coupon_code=request.data.get('coupon')):
-        #     coupon_user = CouponUserModel.objects.get(coupon_user=user)
-        #     if coupon_user.applied == False:
-        #         coupon_discount = coupon_user.coupon_link.discount_percentage
-        #         coupon_discount_amount = total_price * (coupon_discount / 100)
-        #         total_price -= coupon_discount_amount
 
-        #     coupon_user.applied = True
-        #     coupon_user.save()
-
+        coupon_code = request.data.get('coupon_code', None)
+        if not coupon_code:
+            return Response({"error": "Coupon code is required."}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            coupon = CouponModel.objects.get(coupon_code=coupon_code, coupon_user=request.user, applied=False)
+        except CouponModel.DoesNotExist:
+            return Response({"message": "Invalid or already applied coupon."}, status=status.HTTP_400_BAD_REQUEST)
+        total_price_sum = UserCartModel.objects.filter(cart_user=request.user).aggregate(Sum('total_price'))['total_price__sum'] or 0
+        print("Total cart price:", total_price_sum)
+        if total_price_sum < coupon.min_amount:
+            return Response({"message": f"Minimum cart amount of {coupon.min_amount} is required to apply this coupon."}, status=status.HTTP_400_BAD_REQUEST)
+        discount_amount = coupon.discount_amount
+        total_price_after_discount = total_price_sum - discount_amount
+        total_price_after_discount = max(total_price_after_discount, 0)
+        coupon.applied = True
+        coupon.save()
 
         cart_user = UserCartModel.objects.create(
             cart_user=user,
@@ -329,6 +334,7 @@ class AddToCartAPi(APIView):
             "discount_applied": f"{discount_percentage}%"
         }
         return Response({"message": "Added to cart successfully", "data": cart_data}, status=status.HTTP_200_OK)
+
 
 
 
@@ -364,7 +370,7 @@ class RemoveCartItemAPi(APIView):
             return Response({"message": "Cart item not found"}, status=status.HTTP_404_NOT_FOUND)
 
 
-
+ 
 class EncreaseDeCartItemQuantityAPi(APIView):
     permission_classes = [IsAuthenticated]
     def put(self, request):
@@ -377,8 +383,10 @@ class EncreaseDeCartItemQuantityAPi(APIView):
             cart_item = UserCartModel.objects.get(id=item_id, cart_user=request.user)
             cart_item.quantity = int(quantity_obj)
             cart_item.total_price = cart_item.price * int(quantity_obj)
-            if (cart_item.quantity in PersentModel.objects.all().values_list("quantity",flat=True)):
-                persent_entry = PersentModel.objects.get(quantity=cart_item.quantity)
+            try:
+                persent_entry = PersentModel.objects.filter(Q(min_qty__lte=cart_item.quantity) & Q(max_qty__gt=cart_item.quantity)).first()
+                if not persent_entry and PersentModel.objects.exists():
+                    persent_entry = PersentModel.objects.filter(max_qty__lt=cart_item.quantity).order_by('-max_qty').first()
                 discount_percentage = int(persent_entry.persent)
                 print("discount_percentage",discount_percentage)
                 if discount_percentage > 0:
@@ -387,6 +395,8 @@ class EncreaseDeCartItemQuantityAPi(APIView):
                     print("original_price",original_price)
                     discount = original_price * ((100 - discount_percentage) / 100)
                     cart_item.total_price = discount
+            except Exception as e:
+                print("======",e)
             cart_item.save()
 
             return Response({
@@ -485,3 +495,58 @@ class CartCountApi(APIView):
             return Response({"message": "Count of cart items.", "count": cart_count}, status=status.HTTP_200_OK)
         except:
             return Response({"message": "Data not found."}, status=status.HTTP_404_NOT_FOUND)
+
+
+class DiscountApi(APIView):
+    def get(self, request):
+        try:
+            discount = PersentModel.objects.values('min_qty','max_qty','persent','disc')
+            return Response({"message":"Data getting sucessfully","Data":list(discount)},status=status.HTTP_200_OK)
+        except:
+            return Response({"message":"Data not found"},status=status.HTTP_404_NOT_FOUND)
+
+
+class CounponAPi(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        try:
+            coupon_code = request.data.get('coupon_code', None)
+            if not coupon_code:
+                return Response({"error": "Coupon code is required."}, status=status.HTTP_400_BAD_REQUEST)
+            try:
+                coupon = CouponModel.objects.get(coupon_code=coupon_code, coupon_user=request.user, applied=False)
+            except CouponModel.DoesNotExist:
+                return Response({"message": "Invalid or already applied coupon."}, status=status.HTTP_400_BAD_REQUEST)
+            total_price_sum = UserCartModel.objects.filter(cart_user=request.user).aggregate(Sum('total_price'))['total_price__sum'] or 0
+            print("Total cart price:", total_price_sum)
+            if total_price_sum < coupon.min_amount:
+                return Response({"message": f"Minimum cart amount of {coupon.min_amount} is required to apply this coupon."}, status=status.HTTP_400_BAD_REQUEST)
+            discount_amount = coupon.discount_amount
+            total_price_after_discount = total_price_sum - discount_amount
+            total_price_after_discount = max(total_price_after_discount, 0)
+            # coupon.applied = True
+            # coupon.save()
+            return Response({
+                "message": "Coupon applied successfully.",
+                "original_price": total_price_sum,
+                "discount_amount": discount_amount,
+                "discount_price": total_price_after_discount
+            }, status=status.HTTP_200_OK)
+
+        except ProductModel.DoesNotExist:
+            return Response({"message": "Product not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        except Exception as e:
+            print(e)
+            return Response({"message": "An error occurred while applying the coupon."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class GetUserCouponApi(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self, request):
+        user_coupon = CouponModel.objects.filter(coupon_user=request.user).values('coupon_code', 'discount_amount', 'min_amount', 'applied')
+        if user_coupon.exists():
+            return Response({"message": "Data found.", "data": list(user_coupon)}, status=status.HTTP_200_OK)
+        else:
+            return Response({"message": "No coupons found for this user."}, status=status.HTTP_404_NOT_FOUND)

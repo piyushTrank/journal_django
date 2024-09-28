@@ -19,4 +19,8 @@ urlpatterns = [
     path('product-size/', ProductSizeApi.as_view()),
     path('colors/', SendColorAPi.as_view()),
     path('cart-count/', CartCountApi.as_view()),
+    path('discount/', DiscountApi.as_view()),
+    path('coupon/', CounponAPi.as_view()),
+    path('user-coupons/', GetUserCouponApi.as_view()),
 ]
+
