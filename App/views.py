@@ -289,22 +289,22 @@ class AddToCartAPi(APIView):
         else:
             final_price = final_price * quantity
 
-        coupon_code = request.data.get('coupon_code', None)
-        if not coupon_code:
-            return Response({"error": "Coupon code is required."}, status=status.HTTP_400_BAD_REQUEST)
-        try:
-            coupon = CouponModel.objects.get(coupon_code=coupon_code, coupon_user=request.user, applied=False)
-        except CouponModel.DoesNotExist:
-            return Response({"message": "Invalid or already applied coupon."}, status=status.HTTP_400_BAD_REQUEST)
-        total_price_sum = UserCartModel.objects.filter(cart_user=request.user).aggregate(Sum('total_price'))['total_price__sum'] or 0
-        print("Total cart price:", total_price_sum)
-        if total_price_sum < coupon.min_amount:
-            return Response({"message": f"Minimum cart amount of {coupon.min_amount} is required to apply this coupon."}, status=status.HTTP_400_BAD_REQUEST)
-        discount_amount = coupon.discount_amount
-        total_price_after_discount = total_price_sum - discount_amount
-        total_price_after_discount = max(total_price_after_discount, 0)
-        coupon.applied = True
-        coupon.save()
+        # coupon_code = request.data.get('coupon_code', None)
+        # if not coupon_code:
+        #     return Response({"error": "Coupon code is required."}, status=status.HTTP_400_BAD_REQUEST)
+        # try:
+        #     coupon = CouponModel.objects.get(coupon_code=coupon_code, coupon_user=request.user, applied=False)
+        # except CouponModel.DoesNotExist:
+        #     return Response({"message": "Invalid or already applied coupon."}, status=status.HTTP_400_BAD_REQUEST)
+        # total_price_sum = UserCartModel.objects.filter(cart_user=request.user).aggregate(Sum('total_price'))['total_price__sum'] or 0
+        # print("Total cart price:", total_price_sum)
+        # if total_price_sum < coupon.min_amount:
+        #     return Response({"message": f"Minimum cart amount of {coupon.min_amount} is required to apply this coupon."}, status=status.HTTP_400_BAD_REQUEST)
+        # discount_amount = coupon.discount_amount
+        # total_price_after_discount = total_price_sum - discount_amount
+        # total_price_after_discount = max(total_price_after_discount, 0)
+        # coupon.applied = True
+        # coupon.save()
 
         cart_user = UserCartModel.objects.create(
             cart_user=user,
@@ -528,6 +528,7 @@ class CounponAPi(APIView):
             # coupon.applied = True
             # coupon.save()
             return Response({
+                "id":coupon.id,
                 "message": "Coupon applied successfully.",
                 "original_price": total_price_sum,
                 "discount_amount": discount_amount,
@@ -545,7 +546,7 @@ class CounponAPi(APIView):
 class GetUserCouponApi(APIView):
     permission_classes = [IsAuthenticated]
     def get(self, request):
-        user_coupon = CouponModel.objects.filter(coupon_user=request.user).values('coupon_code', 'discount_amount', 'min_amount', 'applied')
+        user_coupon = CouponModel.objects.filter(coupon_user=request.user).values('id','coupon_code', 'discount_amount', 'min_amount', 'applied')
         if user_coupon.exists():
             return Response({"message": "Data found.", "data": list(user_coupon)}, status=status.HTTP_200_OK)
         else:

@@ -199,6 +199,8 @@ class CouponModel(CommonTimePicker):
 
     def save(self, *args, **kwargs):
         self.clean()
+        if self.coupon_code:
+            self.coupon_code = self.coupon_code.upper()
         super().save(*args, **kwargs)
 
 
