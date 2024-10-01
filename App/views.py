@@ -546,7 +546,7 @@ class CounponAPi(APIView):
 class GetUserCouponApi(APIView):
     permission_classes = [IsAuthenticated]
     def get(self, request):
-        user_coupon = CouponModel.objects.filter(coupon_user=request.user).values('id','coupon_code', 'discount_amount', 'min_amount', 'applied')
+        user_coupon = CouponModel.objects.filter(coupon_user=request.user).values('id','coupon_code', 'discount_amount', 'min_amount', 'applied','disc')
         if user_coupon.exists():
             return Response({"message": "Data found.", "data": list(user_coupon)}, status=status.HTTP_200_OK)
         else:

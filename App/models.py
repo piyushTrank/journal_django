@@ -184,6 +184,8 @@ class CouponModel(CommonTimePicker):
     discount_amount = models.PositiveIntegerField()
     min_amount = models.PositiveIntegerField()
     applied = models.BooleanField(default=False)
+    disc = models.CharField("Disc",max_length=1000, null=True,blank=True)
+
     class Meta:
         verbose_name = "Coupon"
         verbose_name_plural = "Coupons"
