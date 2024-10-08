@@ -114,11 +114,14 @@ class ProductModel(CommonTimePicker):
     inner_img = models.ImageField("Inner Image", null=True, blank=True,upload_to='inner_image')
     category_type = models.ForeignKey(ProductCategoryModel, on_delete=models.CASCADE, related_name='category_type')
     additional_price = models.PositiveIntegerField("Additional Price",default=0, blank=True, null=True)
+    page_count = models.PositiveIntegerField(default=200)
     phrase_flag = models.BooleanField(default=True)
     initial_flag = models.BooleanField(default=True)
     cover_logo_flag = models.BooleanField(default=True)
     inner_text_flag = models.BooleanField(default=True)
     inner_logo_flag = models.BooleanField(default=True)
+    own_design_flag = models.BooleanField(default=True)
+    inner_own_flag = models.BooleanField(default=True)
     class Meta:
         verbose_name = "Product"
         verbose_name_plural = "Products"
@@ -164,7 +167,7 @@ class UserCartModel(CommonTimePicker):
     def __str__(self) -> str:
         return self.name
     
-class PersentModel(CommonTimePicker):
+class PercentModel(CommonTimePicker):
     min_qty = models.PositiveIntegerField("Min Quantity",default=0, blank=True, null=True)
     max_qty = models.PositiveIntegerField("Max Quantity",default=0, blank=True, null=True)
     persent = models.PositiveIntegerField("Persent",default=0, blank=True, null=True)

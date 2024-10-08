@@ -275,9 +275,9 @@ class AddToCartAPi(APIView):
 
         discount_percentage = 0
         try:
-            persent_entry = PersentModel.objects.filter(Q(min_qty__lte=quantity) & Q(max_qty__gt=quantity)).first()
-            if not persent_entry and PersentModel.objects.exists():
-                persent_entry = PersentModel.objects.filter(max_qty__lt=quantity).order_by('-max_qty').first()
+            persent_entry = PercentModel.objects.filter(Q(min_qty__lte=quantity) & Q(max_qty__gt=quantity)).first()
+            if not persent_entry and PercentModel.objects.exists():
+                persent_entry = PercentModel.objects.filter(max_qty__lt=quantity).order_by('-max_qty').first()
 
             discount_percentage = int(persent_entry.persent) if persent_entry else 0
         except:
@@ -384,9 +384,9 @@ class EncreaseDeCartItemQuantityAPi(APIView):
             cart_item.quantity = int(quantity_obj)
             cart_item.total_price = cart_item.price * int(quantity_obj)
             try:
-                persent_entry = PersentModel.objects.filter(Q(min_qty__lte=cart_item.quantity) & Q(max_qty__gt=cart_item.quantity)).first()
-                if not persent_entry and PersentModel.objects.exists():
-                    persent_entry = PersentModel.objects.filter(max_qty__lt=cart_item.quantity).order_by('-max_qty').first()
+                persent_entry = PercentModel.objects.filter(Q(min_qty__lte=cart_item.quantity) & Q(max_qty__gt=cart_item.quantity)).first()
+                if not persent_entry and PercentModel.objects.exists():
+                    persent_entry = PercentModel.objects.filter(max_qty__lt=cart_item.quantity).order_by('-max_qty').first()
                 discount_percentage = int(persent_entry.persent)
                 print("discount_percentage",discount_percentage)
                 if discount_percentage > 0:
@@ -431,7 +431,7 @@ class CategoryWiseProduct(APIView):
         try:
             product = ProductModel.objects.get(id=product_id)
             category_type = product.category_type
-            related_products = ProductModel.objects.filter(category_type=category_type).values("id","inner_img","cover_img","product_image","title","disc","category","price","popularity","color","lined_non_lined","cover_type","category_type__title","category_type__image","category_type__p_category", "phrase_flag","initial_flag","cover_logo_flag","inner_text_flag", "inner_logo_flag","additional_price").order_by("-id")[:7]
+            related_products = ProductModel.objects.filter(category_type=category_type).values("id","inner_img","cover_img","product_image","title","disc","category","price","popularity","color","lined_non_lined","cover_type","category_type__title","category_type__image","category_type__p_category", "phrase_flag","initial_flag","cover_logo_flag","inner_text_flag", "inner_logo_flag","additional_price","own_design_flag","inner_own_flag","page_count").order_by("-id")[:7]
             
             for item in related_products:
                 if item['product_image']:
@@ -500,7 +500,7 @@ class CartCountApi(APIView):
 class DiscountApi(APIView):
     def get(self, request):
         try:
-            discount = PersentModel.objects.values('min_qty','max_qty','persent','disc')
+            discount = PercentModel.objects.values('min_qty','max_qty','persent','disc')
             return Response({"message":"Data getting sucessfully","Data":list(discount)},status=status.HTTP_200_OK)
         except:
             return Response({"message":"Data not found"},status=status.HTTP_404_NOT_FOUND)

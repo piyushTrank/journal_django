@@ -48,7 +48,7 @@ class PersentAdmin(admin.ModelAdmin):
     list_display = ('persent', 'min_qty','max_qty','disc',)
     list_filter = ('created_at',)
     ordering = ('-created_at',) 
-admin.site.register(PersentModel, PersentAdmin) 
+admin.site.register(PercentModel, PersentAdmin) 
 
 
 
