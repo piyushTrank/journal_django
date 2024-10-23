@@ -93,6 +93,7 @@ class ProductCategoryModel(CommonTimePicker):
     title = models.CharField("Title",max_length=100, null=True,blank=True)
     image = models.ImageField("Image", null=True, blank=True,upload_to='image')
     p_category = models.CharField("Category", max_length=50, choices=PRODUCT_CATEGORY)
+    category = models.CharField("Category",max_length=20, default='JournalBooks', choices=CATEGORY)
     class Meta:
         verbose_name = "Product Category"
         verbose_name_plural = "Product Categorys"
@@ -104,8 +105,7 @@ class ProductModel(CommonTimePicker):
     title = models.CharField("Title",max_length=100, null=True,blank=True)
     disc = models.CharField("Disc",max_length=1000, null=True,blank=True)
     product_image = models.ImageField("Product Image", null=True, blank=True,upload_to='product_image')
-    category = models.CharField("Category",max_length=20, default='JournalBooks', choices=CATEGORY)
-    price = models.PositiveIntegerField("Price",default=0, blank=True, null=True)
+    price = models.DecimalField("Price", max_digits=10, decimal_places=2, default=0.00, blank=True, null=True)
     popularity = models.IntegerField("Popularity",default=0,null=True,blank=True)
     color = models.CharField("Color Type", max_length=20, null=True,blank=True)
     lined_non_lined = models.CharField("Lined non Lined", max_length=10, default='All', choices=LINED_NON_LINED)
@@ -122,6 +122,7 @@ class ProductModel(CommonTimePicker):
     inner_logo_flag = models.BooleanField(default=True)
     own_design_flag = models.BooleanField(default=True)
     inner_own_flag = models.BooleanField(default=True)
+    page_count_flag = models.BooleanField(default=True)
     class Meta:
         verbose_name = "Product"
         verbose_name_plural = "Products"

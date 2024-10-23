@@ -83,80 +83,90 @@ class SignupApi(APIView):
         return Response(response, status=status.HTTP_400_BAD_REQUEST)
         
 # @method_decorator(cache_page(60 * 15), name='get')
+from django.db.models import OuterRef, Subquery
 
 class ProductAPi(APIView):
     pagination_class = PageNumberPagination
-
     def post(self, request):
         base_url = request.build_absolute_uri('/')
         data = request.data  
         from_date = data.get('from_date')
         to_date = data.get('to_date')
         sort_by = data.get('sort_by', None)
-        color_query = ', '.join(data.get('color', []))
-        lined_non_lined = ', '.join(data.get('lined_non_lined', []))
-        cover_type = ', '.join(data.get('cover_type', []))
+        colors = data.get('color', [])
+        lined_non_lined = data.get('lined_non_lined', [])
+        cover_type = data.get('cover_type', [])
         title = data.get('title')
         category = data.get('category')
+        category_counts = ProductModel.objects.values('category_type__category').annotate(count=Count('category_type__category'))
 
-        colors = [color.strip() for color in color_query.split(',') if color.strip()] if color_query else []
-        lined_non_lineds = [i.strip() for i in lined_non_lined.split(',') if i.strip()] if lined_non_lined else []
-        cover_types = [i.strip() for i in cover_type.split(',') if i.strip()] if cover_type else []
-
-        product_obj = ProductModel.objects.values(
-            'id', 'title', 'disc', 'product_image', 'category', 'price', 'popularity', "created_at",
-            "color", "lined_non_lined", "cover_type", 'created_at')
-
+        product_obj = ProductModel.objects.select_related('category_type__category').all()
+        category_obj = ProductCategoryModel.objects.filter(category=category).annotate(
+            first_product_id=Subquery(
+                ProductModel.objects.filter(category_type=OuterRef('pk')).order_by('id').values('id')[:1]
+            ),
+            first_product_price=Subquery(
+                ProductModel.objects.filter(category_type=OuterRef('pk')).order_by('id').values('price')[:1]
+            )
+        ).values('title', 'image', 'p_category', 'category', 'first_product_price', 'first_product_id')
+        default = False
         if from_date and to_date:
             from_date_obj = timezone.datetime.strptime(from_date, '%Y-%m-%d').replace(hour=0, minute=0, second=0, microsecond=0)
             to_date_obj = timezone.datetime.strptime(to_date, '%Y-%m-%d').replace(hour=23, minute=59, second=59, microsecond=999999)
             product_obj = product_obj.filter(created_at__gte=from_date_obj, created_at__lte=to_date_obj)
-
-        if category == "JournalBooks":
-            product_obj = product_obj.filter(category="JournalBooks")
-        if category == "WritingJournal":
-            product_obj = product_obj.filter(category="WritingJournal")
-        if category == "Others":
-            product_obj = product_obj.filter(category="Others")
-
+        
+        if category:
+            product_obj = product_obj.filter(category_type__category=category)
         if colors:
             product_obj = product_obj.filter(color__in=colors)
-
-        if lined_non_lineds:
-            product_obj = product_obj.filter(lined_non_lined__in=lined_non_lineds)
-
-        if cover_types:
-            product_obj = product_obj.filter(cover_type__in=cover_types)
-
+            default=True
+        if lined_non_lined:
+            product_obj = product_obj.filter(lined_non_lined__in=lined_non_lined)
+            default=True
+        if cover_type:
+            product_obj = product_obj.filter(cover_type__in=cover_type)
+            default=True
         if title:
             product_obj = product_obj.filter(title__icontains=title)
-
+            default=True
         if sort_by == 'price_low_to_high':
             product_obj = product_obj.order_by('price')
+            default=True
         elif sort_by == 'price_high_to_low':
             product_obj = product_obj.order_by('-price')
+            default=True
         elif sort_by == 'popularity':
             product_obj = product_obj.order_by('-popularity')
+            default=True
         elif sort_by == 'latest':
             product_obj = product_obj.order_by('-id')
-
+            default=True
+        if not default:
+            category_parent_counts = ProductCategoryModel.objects.values('category').annotate(count=Count('category'))
+            for item in category_obj:
+                if item['image']:
+                    item['image'] = f"{base_url.rstrip('/')}/media/{item['image']}"
+            category_counts = {}
+            for obj in category_parent_counts:
+                category_counts[obj['category']] = obj['count']
+            return Response({"results": category_obj,"count": category_obj.count(),"category_counts": category_counts,"status": status.HTTP_200_OK}, status=status.HTTP_200_OK)
+        product_obj = product_obj.values(
+            'id', 'title', 'disc', 'product_image', 'price', 'popularity',
+            'color', 'lined_non_lined', 'cover_type', 'created_at',
+            'category_type__title', 'category_type__image', 'category_type__p_category'
+        )
         for item in product_obj:
             if item['product_image']:
                 item['product_image'] = f"{base_url.rstrip('/')}/media/{item['product_image']}"
-        category_counts = ProductModel.objects.values('category').annotate(count=Count('category'))
 
         paginator = self.pagination_class()
         paginated_product = paginator.paginate_queryset(product_obj, request)
         response = paginator.get_paginated_response(paginated_product)
 
-        response.data['category_counts'] = {category['category']: category['count'] for category in category_counts}
+        response.data['category_counts'] = {category['category_type__category']: category['count'] for category in category_counts}
         response.data['current_page'] = paginator.page.number
         response.data['total_pages'] = paginator.page.paginator.num_pages
-
         return response
-
-
-
     
 
 # @method_decorator(cache_page(60 * 15), name='get')
@@ -250,11 +260,14 @@ class AddToCartAPi(APIView):
         base_url = request.build_absolute_uri('/').rstrip('/')
         current_size_id = request.data.get('currentSize')
         quantity = int(request.data.get('quantity', 1))
+        page_count = int(request.data.get('page_count', 200))
         final_price = 0
         product_price = 0
         if product_id:
             try:
                 product_obj = ProductModel.objects.get(id=product_id)
+                product_obj.page_count = page_count
+                product_obj.save()
                 additional_price = product_obj.additional_price
                 product_price = product_obj.price or 0
                 final_price = additional_price + product_price if customise_price == "Yes" else product_price
@@ -288,23 +301,6 @@ class AddToCartAPi(APIView):
             final_price = total_price - discount_amount
         else:
             final_price = final_price * quantity
-
-        # coupon_code = request.data.get('coupon_code', None)
-        # if not coupon_code:
-        #     return Response({"error": "Coupon code is required."}, status=status.HTTP_400_BAD_REQUEST)
-        # try:
-        #     coupon = CouponModel.objects.get(coupon_code=coupon_code, coupon_user=request.user, applied=False)
-        # except CouponModel.DoesNotExist:
-        #     return Response({"message": "Invalid or already applied coupon."}, status=status.HTTP_400_BAD_REQUEST)
-        # total_price_sum = UserCartModel.objects.filter(cart_user=request.user).aggregate(Sum('total_price'))['total_price__sum'] or 0
-        # print("Total cart price:", total_price_sum)
-        # if total_price_sum < coupon.min_amount:
-        #     return Response({"message": f"Minimum cart amount of {coupon.min_amount} is required to apply this coupon."}, status=status.HTTP_400_BAD_REQUEST)
-        # discount_amount = coupon.discount_amount
-        # total_price_after_discount = total_price_sum - discount_amount
-        # total_price_after_discount = max(total_price_after_discount, 0)
-        # coupon.applied = True
-        # coupon.save()
 
         cart_user = UserCartModel.objects.create(
             cart_user=user,
@@ -417,7 +413,7 @@ class OurProductsAPi(APIView):
     pagination_class = PageNumberPagination
     def get(self, request):
         base_url = request.build_absolute_uri('/')
-        product_obj = ProductModel.objects.values('id','title','disc','product_image','category','price','popularity','color','lined_non_lined','cover_type').order_by('?')[:20]
+        product_obj = ProductModel.objects.values('id','title','disc','product_image','category_type__category','price','popularity','color','lined_non_lined','cover_type').order_by('?')[:20]
         for item in product_obj:
             if item['product_image']:
                 item['product_image'] = f"{base_url.rstrip('/')}/media/{item['product_image']}"
@@ -431,7 +427,7 @@ class CategoryWiseProduct(APIView):
         try:
             product = ProductModel.objects.get(id=product_id)
             category_type = product.category_type
-            related_products = ProductModel.objects.filter(category_type=category_type).values("id","inner_img","cover_img","product_image","title","disc","category","price","popularity","color","lined_non_lined","cover_type","category_type__title","category_type__image","category_type__p_category", "phrase_flag","initial_flag","cover_logo_flag","inner_text_flag", "inner_logo_flag","additional_price","own_design_flag","inner_own_flag","page_count").order_by("-id")[:7]
+            related_products = ProductModel.objects.filter(category_type=category_type).values("id","inner_img","cover_img","product_image","title","disc","category_type__category","price","popularity","color","lined_non_lined","cover_type","category_type__title","category_type__image","category_type__p_category", "phrase_flag","initial_flag","cover_logo_flag","inner_text_flag", "inner_logo_flag","additional_price","own_design_flag","inner_own_flag","page_count","page_count","page_count_flag").order_by("-id")
             
             for item in related_products:
                 if item['product_image']:

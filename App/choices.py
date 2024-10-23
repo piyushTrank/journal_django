@@ -46,8 +46,18 @@ PRODUCT_CATEGORY = (
     ("Leather Writing Journals", "Leather Writing Journals"),
     ("Faux Leather Tabbed Journals", "Faux Leather Tabbed Journals"),
     ("Spiral Writing Journals", "Spiral Writing Journals"),
-    ("Recycled Wire-O Journal", "Recycle dWire-O Journal")
+    ("Recycled Wire-O Journal", "Recycle Wire-O Journal"),
+    ("Small Bonded Leather Diary", "Small Bonded Leather Diary"),
+    ("Classic Leather Journal Books", "Classic Leather Journal Books"),
+    ("Medium Bonded Leather Notebooks", "Medium Bonded Leather Notebooks"),
+    ("Large Bonded Leather Journals", "Large Bonded Leather Journals"),
+    ("Classic Bound Notebooks", "Classic Bound Notebooks"),
+    ("Cork Textured Journal Books", "Cork Textured Journal Books"),
+    ("Smooth Cover Notebooks", "Smooth Cover Notebooks"),
+    ("Textured Bound Journal Covers", "Textured Bound Journal Covers")
 )
+
+
 
 P_TYPE = (
     ("JSDU-333-0", "JSDU-333-0"),
