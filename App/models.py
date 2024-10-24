@@ -123,6 +123,8 @@ class ProductModel(CommonTimePicker):
     own_design_flag = models.BooleanField(default=True)
     inner_own_flag = models.BooleanField(default=True)
     page_count_flag = models.BooleanField(default=True)
+    lined_flag = models.BooleanField(default=True)
+    blank_flag = models.BooleanField(default=True)
     class Meta:
         verbose_name = "Product"
         verbose_name_plural = "Products"
