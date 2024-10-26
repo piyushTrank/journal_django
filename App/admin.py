@@ -11,7 +11,7 @@ admin.site.register(MyUser, MyUserAdmin)
 
 
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ('title','product_image','price','popularity','color','lined_non_lined','cover_type','cover_img','inner_img','category_type__title','phrase_flag','initial_flag','cover_logo_flag','inner_text_flag','inner_logo_flag',)
+    list_display = ('id','title','product_image','price','popularity','color','lined_non_lined','cover_type','cover_img','inner_img','category_type__title','phrase_flag','initial_flag','cover_logo_flag','inner_text_flag','inner_logo_flag',)
     list_filter = ('created_at',) 
     search_fields = ('title',)  
     ordering = ('-created_at',)  

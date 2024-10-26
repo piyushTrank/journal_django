@@ -135,7 +135,7 @@ class ProductModel(CommonTimePicker):
         super(ProductModel, self).save(*args, **kwargs)
 
     def __str__(self):
-        return self.title
+        return f"{self.title} - ID : {self.id}"
 
 class ProductSizeModel(CommonTimePicker):
     size_user = models.ForeignKey(ProductModel, on_delete=models.CASCADE, related_name='size_user')

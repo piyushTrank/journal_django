@@ -479,7 +479,7 @@ class SendColorAPi(APIView):
         try:
             colors = ProductModel.objects.values_list("color",flat=True).distinct()
             return Response({"message":"Data getting sucessfully","data":colors},status=status.HTTP_200_OK)
-        except:
+        except: 
             return Response({"message":"Data not found"},status=status.HTTP_404_NOT_FOUND)
         
 
@@ -547,3 +547,4 @@ class GetUserCouponApi(APIView):
             return Response({"message": "Data found.", "data": list(user_coupon)}, status=status.HTTP_200_OK)
         else:
             return Response({"message": "No coupons found for this user."}, status=status.HTTP_404_NOT_FOUND)
+
