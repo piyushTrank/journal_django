@@ -1,0 +1,629 @@
+[
+{
+    "model": "App.productsizemodel",
+    "pk": 1,
+    "fields": {
+        "created_at": "2024-10-25T09:39:27.424Z",
+        "updated_at": "2024-10-25T09:39:27.424Z",
+        "size_user": 1,
+        "image": "image/leather_writing_jounals_brown.jpg",
+        "product_size": "7 3/4 x 5 1/2"
+    }
+},
+{
+    "model": "App.productsizemodel",
+    "pk": 2,
+    "fields": {
+        "created_at": "2024-10-25T09:40:17.163Z",
+        "updated_at": "2024-10-25T09:40:17.164Z",
+        "size_user": 1,
+        "image": "image/leather_writing_jounals_brown_4AdYsCU.jpg",
+        "product_size": "8 1/4 x 6 x 1/2"
+    }
+},
+{
+    "model": "App.productsizemodel",
+    "pk": 3,
+    "fields": {
+        "created_at": "2024-10-25T11:09:16.636Z",
+        "updated_at": "2024-10-25T11:09:16.636Z",
+        "size_user": 2,
+        "image": "image/classic_leather_jounal_books_black.jpg",
+        "product_size": "8 1/4 x 6 x 1/2"
+    }
+},
+{
+    "model": "App.productsizemodel",
+    "pk": 4,
+    "fields": {
+        "created_at": "2024-10-25T11:09:48.147Z",
+        "updated_at": "2024-10-25T11:09:48.147Z",
+        "size_user": 2,
+        "image": "image/classic_leather_jounal_books_black_IbjIJtM.jpg",
+        "product_size": "7 3/4 x 5 1/2"
+    }
+},
+{
+    "model": "App.productsizemodel",
+    "pk": 5,
+    "fields": {
+        "created_at": "2024-10-25T11:11:12.181Z",
+        "updated_at": "2024-10-25T11:11:12.181Z",
+        "size_user": 3,
+        "image": "image/leather_writing_jounal_blue.jpg",
+        "product_size": "8 1/4 x 6 x 1/2"
+    }
+},
+{
+    "model": "App.productsizemodel",
+    "pk": 6,
+    "fields": {
+        "created_at": "2024-10-25T11:11:43.036Z",
+        "updated_at": "2024-10-25T11:11:43.036Z",
+        "size_user": 3,
+        "image": "image/leather_writing_jounal_blue_MyOKyPW.jpg",
+        "product_size": "7 3/4 x 5 1/2"
+    }
+},
+{
+    "model": "App.productsizemodel",
+    "pk": 7,
+    "fields": {
+        "created_at": "2024-10-25T11:12:39.994Z",
+        "updated_at": "2024-10-25T11:12:39.994Z",
+        "size_user": 4,
+        "image": "image/leather_writing_journals_red.jpg",
+        "product_size": "8 1/4 x 6 x 1/2"
+    }
+},
+{
+    "model": "App.productsizemodel",
+    "pk": 8,
+    "fields": {
+        "created_at": "2024-10-25T11:12:55.092Z",
+        "updated_at": "2024-10-25T11:12:55.092Z",
+        "size_user": 4,
+        "image": "image/leather_writing_journals_red_F5pMra1.jpg",
+        "product_size": "7 3/4 x 5 1/2"
+    }
+},
+{
+    "model": "App.productsizemodel",
+    "pk": 9,
+    "fields": {
+        "created_at": "2024-10-25T11:15:37.018Z",
+        "updated_at": "2024-10-25T11:15:37.018Z",
+        "size_user": 5,
+        "image": "image/faux-leather-tabbed-journals-920_1.gif",
+        "product_size": "8 1/4 x 6 x 1/2"
+    }
+},
+{
+    "model": "App.productsizemodel",
+    "pk": 10,
+    "fields": {
+        "created_at": "2024-10-25T11:15:52.785Z",
+        "updated_at": "2024-10-25T11:15:52.785Z",
+        "size_user": 5,
+        "image": "image/faux-leather-tabbed-journals-920_1_9xMDXgy.gif",
+        "product_size": "7 3/4 x 5 1/2"
+    }
+},
+{
+    "model": "App.productsizemodel",
+    "pk": 11,
+    "fields": {
+        "created_at": "2024-10-25T11:21:25.916Z",
+        "updated_at": "2024-10-25T11:21:25.916Z",
+        "size_user": 6,
+        "image": "image/BLUE_1.gif",
+        "product_size": "10\" x 7 3/4\" x 1/2\""
+    }
+},
+{
+    "model": "App.productsizemodel",
+    "pk": 12,
+    "fields": {
+        "created_at": "2024-10-25T11:22:02.894Z",
+        "updated_at": "2024-10-25T11:22:02.894Z",
+        "size_user": 7,
+        "image": "image/black_1.gif",
+        "product_size": "10\" x 7 3/4\" x 1/2\""
+    }
+},
+{
+    "model": "App.productsizemodel",
+    "pk": 13,
+    "fields": {
+        "created_at": "2024-10-25T11:27:12.944Z",
+        "updated_at": "2024-10-25T11:27:12.944Z",
+        "size_user": 8,
+        "image": "image/RED_1.gif",
+        "product_size": "10\" x 7 3/4\" x 1/2\""
+    }
+},
+{
+    "model": "App.productsizemodel",
+    "pk": 14,
+    "fields": {
+        "created_at": "2024-10-25T13:02:30.427Z",
+        "updated_at": "2024-10-25T13:02:30.427Z",
+        "size_user": 9,
+        "image": "image/media_20241024_144340_4533161310148090337_1.jpg",
+        "product_size": "10\" x 7 3/4\" x 1/2\""
+    }
+},
+{
+    "model": "App.productsizemodel",
+    "pk": 15,
+    "fields": {
+        "created_at": "2024-10-25T13:03:38.821Z",
+        "updated_at": "2024-10-25T13:03:38.821Z",
+        "size_user": 10,
+        "image": "image/media_20241024_144340_18320754652210721_1.jpg",
+        "product_size": "10\" x 7 3/4\" x 1/2\""
+    }
+},
+{
+    "model": "App.productsizemodel",
+    "pk": 16,
+    "fields": {
+        "created_at": "2024-10-26T06:25:22.501Z",
+        "updated_at": "2024-10-26T06:25:22.501Z",
+        "size_user": 11,
+        "image": "image/classic_leather_jounal_books_british_tan.jpg",
+        "product_size": "7 3/4\" x 5 1/2"
+    }
+},
+{
+    "model": "App.productsizemodel",
+    "pk": 17,
+    "fields": {
+        "created_at": "2024-10-26T06:25:59.372Z",
+        "updated_at": "2024-10-26T06:25:59.372Z",
+        "size_user": 11,
+        "image": "image/classic_leather_jounal_books_british_tan_EljBT1l.jpg",
+        "product_size": "8 1/8\" x 5 3/4\" x 7/8"
+    }
+},
+{
+    "model": "App.productsizemodel",
+    "pk": 18,
+    "fields": {
+        "created_at": "2024-10-26T06:28:55.781Z",
+        "updated_at": "2024-10-26T06:43:34.334Z",
+        "size_user": 12,
+        "image": "image/classic_leather_jounal_books_red_apZpBPs.jpg",
+        "product_size": "8 1/8\" x 5 3/4\" x 7/8"
+    }
+},
+{
+    "model": "App.productsizemodel",
+    "pk": 19,
+    "fields": {
+        "created_at": "2024-10-26T06:43:21.757Z",
+        "updated_at": "2024-10-26T06:43:21.757Z",
+        "size_user": 12,
+        "image": "image/classic_leather_jounal_books_red.jpg",
+        "product_size": "7 3/4\" x 5 1/2"
+    }
+},
+{
+    "model": "App.productsizemodel",
+    "pk": 20,
+    "fields": {
+        "created_at": "2024-10-26T06:44:16.102Z",
+        "updated_at": "2024-10-26T06:44:16.102Z",
+        "size_user": 13,
+        "image": "image/classic_leather_jounal_books_blue_ktOl8Le_WtYzJTf.jpg",
+        "product_size": "8 1/8\" x 5 3/4\" x 7/8"
+    }
+},
+{
+    "model": "App.productsizemodel",
+    "pk": 21,
+    "fields": {
+        "created_at": "2024-10-26T06:44:36.212Z",
+        "updated_at": "2024-10-26T06:44:36.212Z",
+        "size_user": 13,
+        "image": "image/classic_leather_jounal_books_blue_ktOl8Le_FdGAbX0.jpg",
+        "product_size": "7 3/4 x 5 1/2"
+    }
+},
+{
+    "model": "App.productsizemodel",
+    "pk": 22,
+    "fields": {
+        "created_at": "2024-10-26T07:32:05.734Z",
+        "updated_at": "2024-10-26T07:32:05.734Z",
+        "size_user": 14,
+        "image": "image/classic_leather_jounal_books_black_N7vTRjl.jpg",
+        "product_size": "8 1/8\" x 5 3/4\" x 7/8"
+    }
+},
+{
+    "model": "App.productsizemodel",
+    "pk": 23,
+    "fields": {
+        "created_at": "2024-10-26T07:32:44.789Z",
+        "updated_at": "2024-10-26T07:32:44.789Z",
+        "size_user": 14,
+        "image": "image/classic_leather_jounal_books_black_N7vTRjl_1M12J7K.jpg",
+        "product_size": "7 3/4\" x 5 1/2"
+    }
+},
+{
+    "model": "App.productsizemodel",
+    "pk": 24,
+    "fields": {
+        "created_at": "2024-10-26T07:34:57.444Z",
+        "updated_at": "2024-10-26T07:34:57.444Z",
+        "size_user": 15,
+        "image": "image/blank_cover__red_small_1.jpg",
+        "product_size": "8 1/2\" x 5 3/4"
+    }
+},
+{
+    "model": "App.productsizemodel",
+    "pk": 25,
+    "fields": {
+        "created_at": "2024-10-26T07:36:30.857Z",
+        "updated_at": "2024-10-26T07:36:30.857Z",
+        "size_user": 16,
+        "image": "image/blank_cover_black___small.jpg",
+        "product_size": "8 1/2\" x 5 3/4"
+    }
+},
+{
+    "model": "App.productsizemodel",
+    "pk": 26,
+    "fields": {
+        "created_at": "2024-10-26T07:37:02.028Z",
+        "updated_at": "2024-10-26T07:37:02.028Z",
+        "size_user": 17,
+        "image": "image/blank_cover_navy_blue_small.jpg",
+        "product_size": "8 1/2\" x 5 3/4"
+    }
+},
+{
+    "model": "App.productsizemodel",
+    "pk": 27,
+    "fields": {
+        "created_at": "2024-10-26T07:38:16.839Z",
+        "updated_at": "2024-10-26T07:38:16.839Z",
+        "size_user": 18,
+        "image": "image/blank_covers_green_small.jpg",
+        "product_size": "8 1/2\" x 5 3/4"
+    }
+},
+{
+    "model": "App.productsizemodel",
+    "pk": 28,
+    "fields": {
+        "created_at": "2024-10-26T07:38:43.102Z",
+        "updated_at": "2024-10-26T07:38:43.102Z",
+        "size_user": 19,
+        "image": "image/blank_cover__british_tan_small.jpg",
+        "product_size": "8 1/2\" x 5 3/4"
+    }
+},
+{
+    "model": "App.productsizemodel",
+    "pk": 29,
+    "fields": {
+        "created_at": "2024-10-26T07:40:19.688Z",
+        "updated_at": "2024-10-26T07:40:19.688Z",
+        "size_user": 20,
+        "image": "image/blank_cover__red_medium_-_Copy.jpg",
+        "product_size": "8 1/2\" x 11"
+    }
+},
+{
+    "model": "App.productsizemodel",
+    "pk": 30,
+    "fields": {
+        "created_at": "2024-10-26T07:41:03.225Z",
+        "updated_at": "2024-10-26T07:41:03.225Z",
+        "size_user": 21,
+        "image": "image/blank_cover_black___medium.jpg",
+        "product_size": "8 1/2\" x 11"
+    }
+},
+{
+    "model": "App.productsizemodel",
+    "pk": 31,
+    "fields": {
+        "created_at": "2024-10-26T07:41:32.670Z",
+        "updated_at": "2024-10-26T07:41:32.670Z",
+        "size_user": 22,
+        "image": "image/blank_covers_green_medium_-_Copy.jpg",
+        "product_size": "8 1/2\" x 11"
+    }
+},
+{
+    "model": "App.productsizemodel",
+    "pk": 32,
+    "fields": {
+        "created_at": "2024-10-26T07:42:49.881Z",
+        "updated_at": "2024-10-26T07:48:21.586Z",
+        "size_user": 23,
+        "image": "image/blank_cover_navy_blue_small_ZlwOFzK.jpg",
+        "product_size": "8 1/2\" x 11"
+    }
+},
+{
+    "model": "App.productsizemodel",
+    "pk": 33,
+    "fields": {
+        "created_at": "2024-10-26T07:48:48.407Z",
+        "updated_at": "2024-10-26T07:48:48.407Z",
+        "size_user": 24,
+        "image": "image/blank_cover__british_tan_medium.jpg",
+        "product_size": "8 1/2\" x 11"
+    }
+},
+{
+    "model": "App.productsizemodel",
+    "pk": 34,
+    "fields": {
+        "created_at": "2024-10-26T07:49:21.967Z",
+        "updated_at": "2024-10-26T07:49:21.967Z",
+        "size_user": 25,
+        "image": "image/blank_covers_green_large.jpg",
+        "product_size": "8 1/2\" x 11"
+    }
+},
+{
+    "model": "App.productsizemodel",
+    "pk": 35,
+    "fields": {
+        "created_at": "2024-10-26T07:50:03.623Z",
+        "updated_at": "2024-10-26T07:50:03.623Z",
+        "size_user": 26,
+        "image": "image/blank_cover__red_large.jpg",
+        "product_size": "8 1/2\" x 11"
+    }
+},
+{
+    "model": "App.productsizemodel",
+    "pk": 36,
+    "fields": {
+        "created_at": "2024-10-26T07:54:04.102Z",
+        "updated_at": "2024-10-26T07:54:04.102Z",
+        "size_user": 27,
+        "image": "image/blank_cover_black___large.jpg",
+        "product_size": "8 1/2\" x 11"
+    }
+},
+{
+    "model": "App.productsizemodel",
+    "pk": 37,
+    "fields": {
+        "created_at": "2024-10-26T07:54:53.339Z",
+        "updated_at": "2024-10-26T07:54:53.339Z",
+        "size_user": 28,
+        "image": "image/blank_cover__british_tan_large.jpg",
+        "product_size": "8 1/2\" x 11"
+    }
+},
+{
+    "model": "App.productsizemodel",
+    "pk": 38,
+    "fields": {
+        "created_at": "2024-10-26T07:55:04.279Z",
+        "updated_at": "2024-10-26T07:55:35.232Z",
+        "size_user": 29,
+        "image": "image/blank_cover_navy_blue_large.jpg",
+        "product_size": "8 1/2\" x 11"
+    }
+},
+{
+    "model": "App.productsizemodel",
+    "pk": 39,
+    "fields": {
+        "created_at": "2024-10-26T07:59:01.186Z",
+        "updated_at": "2024-10-26T08:48:07.191Z",
+        "size_user": 31,
+        "image": "image/cork-textured-journal-books-1000_1.gif",
+        "product_size": "5\" x 8 1/8\""
+    }
+},
+{
+    "model": "App.productsizemodel",
+    "pk": 40,
+    "fields": {
+        "created_at": "2024-10-26T08:49:32.120Z",
+        "updated_at": "2024-10-26T08:49:32.120Z",
+        "size_user": 30,
+        "image": "image/classic-bound-notebooks-980_1.gif",
+        "product_size": "8 1/8\" x 5 3/4\" x 7/8"
+    }
+},
+{
+    "model": "App.productsizemodel",
+    "pk": 41,
+    "fields": {
+        "created_at": "2024-10-26T08:52:03.581Z",
+        "updated_at": "2024-10-26T08:52:03.581Z",
+        "size_user": 32,
+        "image": "image/smooth-faux-leather-notebooks-black-1000_1.gif",
+        "product_size": "5\" x 8 1/8"
+    }
+},
+{
+    "model": "App.productsizemodel",
+    "pk": 42,
+    "fields": {
+        "created_at": "2024-10-26T08:52:28.825Z",
+        "updated_at": "2024-10-26T08:52:28.825Z",
+        "size_user": 33,
+        "image": "image/smooth-faux-leather-notebooks-navy-blue-1000_1.gif",
+        "product_size": "5\" x 8 1/8"
+    }
+},
+{
+    "model": "App.productsizemodel",
+    "pk": 43,
+    "fields": {
+        "created_at": "2024-10-26T08:53:00.097Z",
+        "updated_at": "2024-10-26T08:53:00.097Z",
+        "size_user": 34,
+        "image": "image/smooth-faux-leather-notebooks-red-1000_1.gif",
+        "product_size": "5\" x 8 1/8"
+    }
+},
+{
+    "model": "App.productsizemodel",
+    "pk": 44,
+    "fields": {
+        "created_at": "2024-10-26T08:53:28.543Z",
+        "updated_at": "2024-10-26T08:53:28.543Z",
+        "size_user": 35,
+        "image": "image/blank_cover_black___small_iWx6Es1.jpg",
+        "product_size": "5\" x 8 1/8"
+    }
+},
+{
+    "model": "App.productsizemodel",
+    "pk": 45,
+    "fields": {
+        "created_at": "2024-10-26T08:54:14.540Z",
+        "updated_at": "2024-10-26T08:54:14.540Z",
+        "size_user": 36,
+        "image": "image/textured-bound-journal-gray-1000-0000-removebg-preview_1.png",
+        "product_size": "5\" x 8 1/8"
+    }
+},
+{
+    "model": "App.productsizemodel",
+    "pk": 46,
+    "fields": {
+        "created_at": "2024-10-26T08:54:44.230Z",
+        "updated_at": "2024-10-26T08:54:44.230Z",
+        "size_user": 37,
+        "image": "image/textured-bound-journal-brown-1000-0000-removebg-preview_1.png",
+        "product_size": "5\" x 8 1/8"
+    }
+},
+{
+    "model": "App.productsizemodel",
+    "pk": 47,
+    "fields": {
+        "created_at": "2024-10-26T08:55:08.276Z",
+        "updated_at": "2024-10-26T08:55:08.276Z",
+        "size_user": 38,
+        "image": "image/textured-bound-journal-terracotta-1000-0000-removebg-preview_1.png",
+        "product_size": "5\" x 8 1/8"
+    }
+},
+{
+    "model": "App.productsizemodel",
+    "pk": 48,
+    "fields": {
+        "created_at": "2024-10-26T08:55:29.910Z",
+        "updated_at": "2024-10-26T08:55:29.910Z",
+        "size_user": 39,
+        "image": "image/textured-bound-journal-tan-1000-0000-removebg-preview_1.png",
+        "product_size": "5\" x 8 1/8"
+    }
+},
+{
+    "model": "App.productsizemodel",
+    "pk": 49,
+    "fields": {
+        "created_at": "2024-10-26T08:59:08.773Z",
+        "updated_at": "2024-10-26T08:59:08.773Z",
+        "size_user": 40,
+        "image": "image/textured-bound-journal-red-1000-0000__1_-removebg-preview_1.png",
+        "product_size": "5\" x 8 1/8"
+    }
+},
+{
+    "model": "App.productsizemodel",
+    "pk": 50,
+    "fields": {
+        "created_at": "2024-10-26T08:59:29.341Z",
+        "updated_at": "2024-10-26T08:59:29.341Z",
+        "size_user": 41,
+        "image": "image/textured-bound-journal-orange-1000-0000-removebg-preview_1.png",
+        "product_size": "5\" x 8 1/8"
+    }
+},
+{
+    "model": "App.productsizemodel",
+    "pk": 51,
+    "fields": {
+        "created_at": "2024-10-26T08:59:50.060Z",
+        "updated_at": "2024-10-26T08:59:50.060Z",
+        "size_user": 42,
+        "image": "image/textured-bound-journal-yellow-1000-0000-removebg-preview_1.png",
+        "product_size": "5\" x 8 1/8"
+    }
+},
+{
+    "model": "App.productsizemodel",
+    "pk": 52,
+    "fields": {
+        "created_at": "2024-10-26T09:00:18.207Z",
+        "updated_at": "2024-10-26T09:00:18.207Z",
+        "size_user": 45,
+        "image": "image/textured-bound-journal-green-1000-0000-removebg-preview_1.png",
+        "product_size": "5\" x 8 1/8"
+    }
+},
+{
+    "model": "App.productsizemodel",
+    "pk": 53,
+    "fields": {
+        "created_at": "2024-10-26T09:02:00.913Z",
+        "updated_at": "2024-10-26T09:02:00.913Z",
+        "size_user": 43,
+        "image": "image/textured-bound-journal-green-1000-0000-removebg-preview_2.png",
+        "product_size": "5\" x 8 1/8"
+    }
+},
+{
+    "model": "App.productsizemodel",
+    "pk": 54,
+    "fields": {
+        "created_at": "2024-10-26T09:02:20.852Z",
+        "updated_at": "2024-10-26T09:02:20.852Z",
+        "size_user": 44,
+        "image": "image/textured-bound-journal-teal-1000-0000-removebg-preview_1.png",
+        "product_size": "5\" x 8 1/8"
+    }
+},
+{
+    "model": "App.productsizemodel",
+    "pk": 55,
+    "fields": {
+        "created_at": "2024-10-26T09:02:40.856Z",
+        "updated_at": "2024-10-26T09:02:40.856Z",
+        "size_user": 46,
+        "image": "image/textured-bound-journal-navy-blue-1000-0000-removebg-preview-removebg-preview_2.png",
+        "product_size": "5\" x 8 1/8"
+    }
+},
+{
+    "model": "App.productsizemodel",
+    "pk": 56,
+    "fields": {
+        "created_at": "2024-10-26T09:02:57.788Z",
+        "updated_at": "2024-10-26T09:02:57.788Z",
+        "size_user": 47,
+        "image": "image/textured-bound-journal-purple-1000-0000__1_-removebg-preview_1.png",
+        "product_size": "5\" x 8 1/8"
+    }
+},
+{
+    "model": "App.productsizemodel",
+    "pk": 57,
+    "fields": {
+        "created_at": "2024-10-26T09:03:38.346Z",
+        "updated_at": "2024-10-26T09:03:38.346Z",
+        "size_user": 48,
+        "image": "image/textured-bound-journal-pink-1000-0000-removebg-preview_2.png",
+        "product_size": "5\" x 8 1/8"
+    }
+}
+]

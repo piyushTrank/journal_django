@@ -453,21 +453,14 @@ class ProductSizeApi(APIView):
     def get(self, request):
         base_url = request.build_absolute_uri('/')
         product_id = request.query_params.get('product_id')
-
         try:
             product = ProductModel.objects.get(id=product_id)
-            category_type = product.category_type
 
-            related_products = ProductModel.objects.filter(
-                category_type=category_type
-            ).prefetch_related(
-                Prefetch('size_user', queryset=ProductSizeModel.objects.all())
-            )
+            related_products = product.size_user.all()
             sizes = [{
                     'id': size.id,'product_size': size.product_size,'image': f"{base_url.rstrip('/')}/media/{size.image}" if size.image else None
                 }
-                for product in related_products
-                for size in product.size_user.all()
+                for size in related_products
             ]
             return Response({"message": "Data retrieved successfully","data": sizes}, status=200)
         except ProductModel.DoesNotExist:
